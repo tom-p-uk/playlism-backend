@@ -4,7 +4,8 @@
   "description": "",
   "main": "server/app.js",
   "scripts": {
-    "start": "nodemon src/app.js --exec babel-node --presets es2015,stage-2 --require babel-polyfill",
+    "start": "node src/index.js",
+    "dev": "nodemon src/app.js --exec babel-node --presets es2015,stage-2 --require babel-polyfill",
     "test": "nodemon --exec 'NODE_ENV=\"test\" mocha ./src -t 5000 --recursive --compilers js:babel-core/register --require babel-polyfill'",
     "build": "babel src -d dist --presets es2015,stage-2",
     "serve": "node dist/app.js"
@@ -23,7 +24,9 @@
     "jwt-simple": "^0.5.1",
     "moment": "^2.18.1",
     "mongoose": "^4.8.5",
+    "morgan": "^1.8.2",
     "passport": "^0.3.2",
+    "passport-facebook-token": "^3.3.0",
     "passport-jwt": "^2.2.1",
     "passport-local": "^1.0.0"
   },
@@ -34,7 +37,6 @@
     "babel-preset-es2015": "^6.24.0",
     "babel-preset-stage-2": "^6.22.0",
     "chai": "^3.5.0",
-    "chai-as-promised": "^7.0.0",
     "mocha": "^3.2.0",
     "supertest": "^3.0.0"
   }
