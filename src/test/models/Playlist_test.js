@@ -50,6 +50,7 @@ describe('Playlist', () => {
   it('creates a playlist with a "dateAdded" property', async () => {
     const result = await Playlist.findById(playlist._id);
     expect(result).to.have.property('dateAdded');
+    expect(result.dateAdded).to.be.a('date');
   });
 
   it('creates a playlist with a "forUser" property', async () => {

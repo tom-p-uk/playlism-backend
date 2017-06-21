@@ -8,7 +8,7 @@ describe('User', () => {
     user = new User({
       local: {
         username: 'testuser',
-        password: 'password'
+        password: 'testpw'
       }
     });
 
@@ -33,7 +33,7 @@ describe('User', () => {
 
   it('hashes the password', async () => {
     const result = await User.findById(user._id);
-    expect(result.local.password).to.not.equal(user.local.password);
+    expect(result.local.password).to.not.equal('testpw');
   });
 
   it('shows a list of users in the "friends" and friendRequests" fields', async () => {
@@ -54,5 +54,6 @@ describe('User', () => {
   it('add a date to the "dateJoined" field', async () => {
     const result = await User.findById(user._id);
     expect(result).to.have.property('dateJoined');
+    expect(result.dateJoined).to.be.a('date');
   });
 });

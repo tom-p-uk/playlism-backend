@@ -7,10 +7,7 @@ mongoose.Promise = global.Promise;
 const UserSchema = new Schema({
   local: {
     username: String,
-    password: {
-      type: String,
-      select: false,
-    },
+    password: String,
     profileImg: {
       type: String,
       default: 'http://i.imgur.com/8qPW2gr.png',

@@ -25,6 +25,7 @@ describe('Song', () => {
   it('add a date to the "dateAdded" field', async () => {
     const result = await Song.findById(song._id);
     expect(result).to.have.property('dateAdded');
+    expect(result.dateAdded).to.be.a('date');
   });
 
   it('can add a user to the "likedByUsers" field', async () => {
