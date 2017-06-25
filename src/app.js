@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import morgan from 'morgan';
+import passport from 'passport';
 import _ from './env';
 import routes from './routes';
 
@@ -20,6 +21,8 @@ app.use(bodyParser.json({ type: '*/*' }));
 app.use(bodyParser.urlencoded({ type: '*/x-www-form-urlencoded', extended: true }));
 app.use(cors());
 app.use(morgan('combined'));
+app.use(passport.initialize());
+app.use(passport.session());
 
 routes(app);
 

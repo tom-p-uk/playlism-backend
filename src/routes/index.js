@@ -1,16 +1,35 @@
 import app from '../app';
 import passportService from '../services/passport';
 import passport from 'passport';
-import { signUp, signIn } from '../controllers/user_controller';
+import { signUp, signIn, facebookAuth } from '../controllers/auth_controller';
 import playlistController from '../controllers/playlist_controller';
 import songController from '../controllers/song_controller';
+import tokenForUser from '../services/token';
 
 const requireAuth = passport.authenticate('jwt', { session: false });
-const requireSignIn = passport.authenticate('local', { session: false });
-const requireFacebookAuth = passport.authenticate('facebook-token', { session: false });
 
 export default app => {
-  // app.post('/api/auth/facebook', requireFacebookAuth, userController.facebookAuth);
-  app.post('/api/auth/signup', signUp);
-  app.post('/api/auth/signin', requireSignIn, signIn);
+  let redirectUrl; // Url to redirect back to mobile app following
+
+  // Facebook auth routes
+  app.get('/auth/facebook', (req, res) => {
+    redirectUrl = req.query.linkingUri;
+    passport.authenticate('facebook')(req, res);
+  });
+
+  app.get('/auth/facebook/callback',
+    passport.authenticate('facebook', { failureRedirect: '/auth/facebook' }),
+    // Redirect to mobile app using url pulled from query string, passing user and token info
+    (req, res) => res.redirect(`${redirectUrl}?user=${JSON.stringify(req.user)}&token=${tokenForUser(req.user)}`));
+
+  // Google auth routes
+  app.get('/auth/google', (req, res) => {
+    redirectUrl = req.query.linkingUri;
+    passport.authenticate('google', { scope: ['profile'] })(req, res);
+  });
+
+  app.get('/auth/google/callback',
+    passport.authenticate('google', { failureRedirect: '/auth/google' }),
+    // Redirect to mobile app using url pulled from query string, passing user and token info
+    (req, res) => res.redirect(`${redirectUrl}?user=${JSON.stringify(req.user)}&token=${tokenForUser(req.user)}`));
 };

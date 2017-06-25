@@ -34,7 +34,4 @@ export const signUp = async (req, res) => {
 
 export const signIn = (req, res) => res.send({ token: tokenForUser(req.user), user: req.user });
 
-export const facebookAuth = (req, res) => {
-  console.log(req);
-  res.send({ token: tokenForUser(req.user), user: req.user });
-}
+export const facebookAuth = (req, res) => res.send({ token: tokenForUser(req.user), user: req.user });
