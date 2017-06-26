@@ -11,6 +11,7 @@ const UserSchema = new Schema({
   displayName: String,
   googleId: String,
   facebookId: String,
+  profileImg: String,
   dateJoined: {
     type: Date,
     default: Date.now(),
