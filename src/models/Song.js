@@ -15,7 +15,11 @@ const SongSchema = new Schema({
   likedByUsers: [{
     type: Schema.Types.ObjectId,
     ref: 'user',
-  }]
+  }],
+  playlist: {
+    type: Schema.Types.ObjectId,
+    ref: 'playlist',
+  },
 });
 
 SongSchema.plugin(findOrCreate);

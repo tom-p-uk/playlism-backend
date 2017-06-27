@@ -6,7 +6,12 @@ import {
   editDisplayName,
   editProfileImg,
 } from '../controllers/user_controller';
-import playlistController from '../controllers/playlist_controller';
+import {
+  createPlaylist,
+  deletePlaylist,
+  editPlaylistTitle,
+  updateLastSongPlayed,
+} from '../controllers/playlist_controller';
 import songController from '../controllers/song_controller';
 import tokenForUser from '../services/token';
 
@@ -41,4 +46,10 @@ export default app => {
   app.get('/user', requireAuth, fetchUser);
   app.put('/user/displayname', requireAuth, editDisplayName);
   app.put('/user/profileimg', requireAuth, editProfileImg);
+
+  // Playlist controller routes
+  app.post('/playlist', requireAuth, createPlaylist);
+  app.delete('/playlist/:playlistId', requireAuth, deletePlaylist);
+  app.put('/playlist/title/:playlistId', requireAuth, editPlaylistTitle);
+  app.put('playlist/lastsongplayed/:playlistId', requireAuth, updateLastSongPlayed);
 };

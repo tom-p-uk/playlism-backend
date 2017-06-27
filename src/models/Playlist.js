@@ -5,9 +5,9 @@ mongoose.Promise = global.Promise;
 const PlaylistSchema = new Schema({
   title: {
     type: String,
-    required: true,
+    required: [true, 'Playlist title must be provided.'],
     minlength: [4, 'Playlist title must be at least 4 characters long.'],
-    maxlength: [100, 'Playlist title must less than 100 characters long.'],
+    maxlength: [50, 'Playlist title must no more than 50 characters long.'],
   },
   dateAdded: {
     type: Date,
@@ -21,12 +21,8 @@ const PlaylistSchema = new Schema({
   forUser: {
       type: Schema.Types.ObjectId,
       ref: 'user',
-      required: true,
+      required: [true, 'A recipient user must be provided.'],
   },
-  songs: [{
-    type: Schema.Types.ObjectId,
-    ref: 'song',
-  }],
   lastSongPlayed: {
     type: Schema.Types.ObjectId,
     ref: 'song',

@@ -4,7 +4,7 @@ import request from 'supertest';
 import User from '../../models/User';
 import tokenForUser from '../../services/token';
 
-describe.only('userController', () => {
+describe('userController', () => {
   let user;
   let userToken;
 
@@ -88,7 +88,7 @@ describe.only('userController', () => {
 
       expect(res.status).to.equal(422);
       expect(res.body.error).to.exist;
-      expect(res.body.error).to.equal('Display name must less than 100 characters long.');
+      expect(res.body.error).to.equal('Display name must no more than 100 characters long.');
       expect(foundUser.displayName).to.equal('Test User');
     });
   });
