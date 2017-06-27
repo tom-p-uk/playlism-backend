@@ -6,6 +6,8 @@ const PlaylistSchema = new Schema({
   title: {
     type: String,
     required: true,
+    minlength: [4, 'Playlist title must be at least 4 characters long.'],
+    maxlength: [100, 'Playlist title must less than 100 characters long.'],
   },
   dateAdded: {
     type: Date,

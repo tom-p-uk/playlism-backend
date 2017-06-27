@@ -3,3 +3,5 @@ src/.env
 dist
 .env
 package-lock.json
+src/controllers/auth_controller.js
+src/test/controllers/auth_controller_test.js

@@ -7,8 +7,11 @@ mongoose.Promise = global.Promise;
 const UserSchema = new Schema({
   firstName: String,
   lastName: String,
-  fullName: String,
-  displayName: String,
+  displayName: {
+    type: String,
+    minlength: [4, 'Display name must be at least 4 characters long.'],
+    maxlength: [50, 'Display name must less than 100 characters long.'],
+  },
   googleId: String,
   facebookId: String,
   profileImg: String,
