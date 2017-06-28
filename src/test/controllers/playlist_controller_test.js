@@ -30,7 +30,7 @@ describe('playlistController', () => {
     await user2.save();
   });
 
-  describe.only('.createPlaylist', () => {
+  describe('.createPlaylist', () => {
     it('can only be accessed by passing a valid JWT', async () => {
       const res = await request(app)
         .post('/playlist');
@@ -93,7 +93,7 @@ describe('playlistController', () => {
       expect(foundPlaylist).to.equal(null);
     });
 
-    it.only('throws an error if "forUser" data is not provided', async () => {
+    it('throws an error if "forUser" data is not provided', async () => {
       const res = await request(app)
         .post('/playlist')
         .send({ title: 'Test Playlist' })
@@ -105,6 +105,95 @@ describe('playlistController', () => {
       expect(res.body.error).to.exist;
       expect(res.body.error).to.equal('A recipient user must be provided.');
       expect(foundPlaylist).to.equal(null);
+    });
+  });
+
+  describe('.deletePlaylist', () => {
+    let playlist;
+
+    beforeEach(async () => {
+      playlist = new Playlist({
+        title: 'Test Playlist',
+        byUser: user1,
+        forUser: user2,
+      });
+
+      await playlist.save();
+    });
+
+    it('can only be accessed by passing a valid JWT', async () => {
+      const res = await request(app)
+        .delete(`/playlist/${playlist._id}`);
+
+      expect(res.status).to.equal(401);
+      expect(res.text).to.equal('Unauthorized');
+    });
+
+    it('sends an error if an invalid playlist ID is provided', async () => {
+      const res = await request(app)
+        .delete(`/playlist/12345`)
+        .set('authorization', user1Token);
+
+      expect(res.status).to.equal(422);
+      expect(res.body.error).to.exist;
+      expect(res.body.error).to.equal('The playlist ID provided is invalid.');
+    });
+
+    it('sends an error if the playlist does not exist.', async () => {
+      const playlist2 = new Playlist({ title: 'Test Playlist2' });
+      const res = await request(app)
+        .delete(`/playlist/${playlist2._id}`)
+        .set('authorization', user1Token);
+
+      expect(res.status).to.equal(422);
+      expect(res.body.error).to.exist;
+      expect(res.body.error).to.equal('The playlist specified does not exist.');
+    });
+
+    it('sends an error message if a user tries to delete a playlist that is not theirs', async () => {
+      const user3 = new User({
+        firstName: 'Test',
+        lastName: 'User',
+        displayName: 'Test User3',
+      });
+
+      const user3Token = tokenForUser(user3);
+
+      await user3.save();
+
+      const res = await request(app)
+        .delete(`/playlist/${playlist._id}`)
+        .set('authorization', user3Token);
+
+      expect(res.status).to.equal(401);
+      expect(res.body.error).to.exist;
+      expect(res.body.error).to.equal("You don't have permission to delete this playlist.");
+    });
+
+    it('allows the "byUser" to delete a playlist', async () => {
+      const res = await request(app)
+        .delete(`/playlist/${playlist._id}`)
+        .set('authorization', user1Token);
+
+      const deletedPlaylist = await Playlist.findById(playlist._id);
+
+      expect(res.status).to.equal(200);
+      expect(res.body.success).to.exist;
+      expect(res.body.success.playlist._id).to.equal(playlist._id.toString());
+      expect(deletedPlaylist).to.equal(null);
+    });
+
+    it('allows the "forUser" to delete a playlist', async () => {
+      const res = await request(app)
+        .delete(`/playlist/${playlist._id}`)
+        .set('authorization', user2Token);
+
+      const deletedPlaylist = await Playlist.findById(playlist._id);
+
+      expect(res.status).to.equal(200);
+      expect(res.body.success).to.exist;
+      expect(res.body.success.playlist._id).to.equal(playlist._id.toString());
+      expect(deletedPlaylist).to.equal(null);
     });
   });
 });
