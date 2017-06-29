@@ -3,9 +3,10 @@ import app from '../../app';
 import request from 'supertest';
 import Playlist from '../../models/Playlist';
 import User from '../../models/User';
-import tokenForUser from '../../services/token';
+import Song from '../../models/Song';
+import tokenForUser from '../../helpers/token';
 
-describe('playlistController', () => {
+describe.only('playlistController', () => {
   let user1, user1Token;
   let user2, user2Token;
 
@@ -296,6 +297,31 @@ describe('playlistController', () => {
       expect(res.body.success).to.exist;
       expect(res.body.success.playlist._id).to.equal(playlist._id.toString());
       expect(editedPlaylist.title).to.equal('New Title');
+    });
+  });
+
+  /*****************************************************************************
+  **************************** .updateLastSongPlayed ***************************
+  *****************************************************************************/
+  describe.only('.updateLastSongPlayed', () => {
+    let playlist;
+
+    beforeEach(async () => {
+      playlist = new Playlist({
+        title: 'Test Playlist',
+        byUser: user1,
+        forUser: user2,
+      });
+
+      await playlist.save();
+    });
+
+    it('can only be accessed by passing a valid JWT', async () => {
+      const res = await request(app)
+        .put(`/playlist/title/${playlist._id}`);
+
+      expect(res.status).to.equal(401);
+      expect(res.text).to.equal('Unauthorized');
     });
   });
 });

@@ -1,34 +1,9 @@
 import Playlist from '../models/Playlist';
 import Song from '../models/Song';
-import tokenForUser from '../services/token';
+import tokenForUser from '../helpers/token';
 import mongoose from 'mongoose';
-
-const validatePlaylist = async (playlistId, user, editOrDelete) => {
-  if (!mongoose.Types.ObjectId.isValid(playlistId)) {
-    return { status: 422, error: 'The playlist ID provided is invalid.' };
-  }
-
-  let playlist;
-
-  try {
-    playlist = await Playlist.findById(playlistId);
-  } catch (err) {
-    console.log(err);
-    return { status: 500, error: 'The playlist could not be retrieved from the database' };
-  }
-
-  if (!playlist) {
-    return { status: 422, error: 'The playlist specified does not exist.' };
-  }
-
-  const { byUser, forUser } = playlist;
-
-  if (!user._id.equals(byUser) && !user._id.equals(forUser)) {
-    return { status: 401, error: `You don't have permission to ${editOrDelete} this playlist.` };
-  }
-
-  return playlist;
-};
+import validateSong from '../helpers/validate_song';
+import validatePlaylist from '../helpers/validate_playlist';
 
 export const createPlaylist = async (req, res) => {
   const { title, forUser } = req.body;
@@ -101,6 +76,16 @@ export const editPlaylistTitle = async (req, res) => {
   }
 };
 
-export const updateLastSongPlayed = (req, res) => {
-  res.send('a');
+export const updateLastSongPlayed = async (req, res) => {
+  const { user } = req;
+  const { playlistId } = req.params;
+  const  { songId } = req.body;
+
+  const playlist = await validatePlaylist(playlistId, user, 'edit');
+  const song = await validateSong(songId, user, 'edit');
+
+  if (playlist.error) {
+    const { status, error } = playlist;
+    return res.status(status).send({ error });
+  }
 };

@@ -13,7 +13,7 @@ import {
   updateLastSongPlayed,
 } from '../controllers/playlist_controller';
 import songController from '../controllers/song_controller';
-import tokenForUser from '../services/token';
+import tokenForUser from '../helpers/token';
 
 const requireAuth = passport.authenticate('jwt', { session: false });
 

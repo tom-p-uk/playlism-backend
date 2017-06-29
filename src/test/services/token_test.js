@@ -1,4 +1,4 @@
-import token from '../../services/token';
+import tokenForUser from '../../helpers/token';
 import User from '../../models/User';
 import { expect } from 'chai';
 
@@ -9,7 +9,7 @@ describe('token', () => {
       password: 'testpw',
     }});
 
-    const userToken = token(user);
+    const userToken = tokenForUser(user);
     const split = userToken.split('.');
     expect(userToken).to.be.a('string');
     expect(split.length).to.equal(3);
