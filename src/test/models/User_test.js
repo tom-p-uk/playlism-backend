@@ -5,12 +5,7 @@ describe('User', () => {
   let user;
 
   beforeEach(async () => {
-    user = new User({
-      local: {
-        username: 'testuser',
-        password: 'testpw'
-      }
-    });
+    user = new User({ displayName: 'Test User' });
 
     try {
       await user.save();
@@ -25,20 +20,9 @@ describe('User', () => {
     expect(result[0]._id).to.eql(user._id);
   });
 
-  it('adds a default profile image', async () => {
-    const result = await User.findById(user._id);
-    expect(result.local).to.have.property('profileImg');
-    expect(result.local.profileImg).to.not.equal(undefined);
-  });
-
-  it('hashes the password', async () => {
-    const result = await User.findById(user._id);
-    expect(result.local.password).to.not.equal('testpw');
-  });
-
   it('shows a list of users in the "friends" and friendRequests" fields', async () => {
-    const friend1 = new User({});
-    const friend2 = new User({});
+    const friend1 = new User({ displayName: 'Friend1' });
+    const friend2 = new User({ displayName: 'Friend2' });
     await friend1.save();
     await friend2.save();
 
@@ -51,7 +35,7 @@ describe('User', () => {
     expect(result.friendRequests[0]._id).to.eql(friend2._id);
   });
 
-  it('add a date to the "dateJoined" field', async () => {
+  it('adds a date to the "dateJoined" field', async () => {
     const result = await User.findById(user._id);
     expect(result).to.have.property('dateJoined');
     expect(result.dateJoined).to.be.a('date');

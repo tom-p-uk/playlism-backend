@@ -65,12 +65,6 @@ describe('Playlist', () => {
     expect(result.byUser._id).to.eql(user2._id);
   });
 
-  it('creates a playlist with a "songs" property', async () => {
-    const result = await Playlist.findById(playlist._id);
-    expect(result).to.have.property('songs');
-    expect(result.songs.length).to.equal(2);
-  });
-
   it('creates a playlist with a "lastSongPlayed" property', async () => {
     const result = await Playlist.findById(playlist._id).populate('lastSongPlayed');
     expect(result).to.have.property('lastSongPlayed');
