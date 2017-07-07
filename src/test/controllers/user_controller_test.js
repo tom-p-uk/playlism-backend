@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import app from '../../app';
 import request from 'supertest';
 import User from '../../models/User';
-import tokenForUser from '../../helpers/token';
+import tokenForUser from '../../services/token';
 
 describe('userController', () => {
   let user;

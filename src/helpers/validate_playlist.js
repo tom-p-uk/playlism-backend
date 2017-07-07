@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import Playlist from '../models/Playlist';
 
-export const validatePlaylist = async (playlistId, user, editOrDelete) => {
+const validatePlaylist = async (playlistId, user, editUpdateOrDelete) => {
   if (!mongoose.Types.ObjectId.isValid(playlistId)) {
     return { status: 422, error: 'The playlist ID provided is invalid.' };
   }
@@ -22,8 +22,10 @@ export const validatePlaylist = async (playlistId, user, editOrDelete) => {
   const { byUser, forUser } = playlist;
 
   if (!user._id.equals(byUser) && !user._id.equals(forUser)) {
-    return { status: 401, error: `You don't have permission to ${editOrDelete} this playlist.` };
+    return { status: 401, error: `You don't have permission to ${editUpdateOrDelete} this playlist.` };
   }
 
   return playlist;
 };
+
+export default validatePlaylist;

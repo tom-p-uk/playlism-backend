@@ -1,6 +1,6 @@
 import Playlist from '../models/Playlist';
 import Song from '../models/Song';
-import tokenForUser from '../helpers/token';
+import tokenForUser from '../services/token';
 import mongoose from 'mongoose';
 import validateSong from '../helpers/validate_song';
 import validatePlaylist from '../helpers/validate_playlist';
@@ -81,11 +81,34 @@ export const updateLastSongPlayed = async (req, res) => {
   const { playlistId } = req.params;
   const  { songId } = req.body;
 
-  const playlist = await validatePlaylist(playlistId, user, 'edit');
-  const song = await validateSong(songId, user, 'edit');
+  const playlist = await validatePlaylist(playlistId, user, 'update');
+  const song = await validateSong(songId, user, 'update');
 
   if (playlist.error) {
     const { status, error } = playlist;
     return res.status(status).send({ error });
+  } else if (song.error) {
+    const { status, error } = song;
+    return res.status(status).send({ error });
   }
+
+  try {
+    const updatedPlaylist = await playlist.update({ lastSongPlayed: song });
+    res.status(200).send({ success: { playlist: updatedPlaylist } });
+  } catch (err) {
+    console.log(err);
+    if (err.errors.lastSongPlayed) {
+      res.status(422).send({ error: err.errors.lastSongPlayed.message });
+    } else {
+      res.status(500).send({ error: 'The playlist could not be updated.' });
+    }
+  }
+};
+
+export const fetchForUserPlaylists = (req, res) => {  // TODO
+  res.send('a');
+};
+
+export const fetchByUserPlaylists = (req, res) => {  // TODO
+  res.send('a');
 };

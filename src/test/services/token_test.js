@@ -1,4 +1,4 @@
-import tokenForUser from '../../helpers/token';
+import tokenForUser from '../../services/token';
 import User from '../../models/User';
 import { expect } from 'chai';
 

@@ -1,19 +1,26 @@
 import app from '../app';
 import passportService from '../services/passport';
 import passport from 'passport';
+import tokenForUser from '../services/token';
 import {
   fetchUser,
   editDisplayName,
-  editProfileImg,
+  editProfileImg
 } from '../controllers/user_controller';
 import {
   createPlaylist,
   deletePlaylist,
   editPlaylistTitle,
   updateLastSongPlayed,
+  fetchForUserPlaylists,
+  fetchByUserPlaylists
 } from '../controllers/playlist_controller';
-import songController from '../controllers/song_controller';
-import tokenForUser from '../helpers/token';
+import {
+  addSong,
+  deleteSong,
+  fetchSongsInPlaylist,
+  fetchLikedSongs
+} from '../controllers/song_controller';
 
 const requireAuth = passport.authenticate('jwt', { session: false });
 
@@ -25,10 +32,8 @@ export default app => {
     redirectUrl = req.query.linkingUri;
     passport.authenticate('facebook')(req, res);
   });
-
   app.get('/auth/facebook/callback',
     passport.authenticate('facebook', { failureRedirect: '/auth/facebook' }),
-    // Redirect to mobile app using url pulled from query string, passing user and token info
     (req, res) => res.redirect(`${redirectUrl}?user=${JSON.stringify(req.user)}&token=${tokenForUser(req.user)}`));
 
   // Google auth routes
@@ -36,10 +41,8 @@ export default app => {
     redirectUrl = req.query.linkingUri;
     passport.authenticate('google', { scope: ['profile'] })(req, res);
   });
-
   app.get('/auth/google/callback',
     passport.authenticate('google', { failureRedirect: '/auth/google' }),
-    // Redirect to mobile app using url pulled from query string, passing user and token info
     (req, res) => res.redirect(`${redirectUrl}?user=${JSON.stringify(req.user)}&token=${tokenForUser(req.user)}`));
 
   // User controller routes
@@ -51,5 +54,13 @@ export default app => {
   app.post('/playlist', requireAuth, createPlaylist);
   app.delete('/playlist/:playlistId', requireAuth, deletePlaylist);
   app.put('/playlist/title/:playlistId', requireAuth, editPlaylistTitle);
-  app.put('playlist/lastsongplayed/:playlistId', requireAuth, updateLastSongPlayed);
+  app.put('/playlist/lastsongplayed/:playlistId', requireAuth, updateLastSongPlayed);
+  app.get('/playlist/foruser/:userId', requireAuth, fetchForUserPlaylists);
+  app.get('/playlist/byuser/:userId', requireAuth, fetchByUserPlaylists);
+
+  // Song controller routes
+  app.post('/song', requireAuth, addSong);
+  app.delete('/song/:songId', requireAuth, deleteSong);
+  app.get('/song/:playlistId', requireAuth, fetchSongsInPlaylist);
+  app.get('/song/liked', requireAuth, fetchLikedSongs);
 };

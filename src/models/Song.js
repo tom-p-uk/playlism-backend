@@ -16,10 +16,10 @@ const SongSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'user',
   }],
-  playlist: {
+  inPlaylists: [{
     type: Schema.Types.ObjectId,
     ref: 'playlist',
-  },
+  }],
 });
 
 SongSchema.plugin(findOrCreate);

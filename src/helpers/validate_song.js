@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import Song from '../models/Song';
 
-export const validateSong = async (songId, user, editOrDelete) => {
+const validateSong = async (songId, user, editUpdateOrDelete) => {
   if (!mongoose.Types.ObjectId.isValid(songId)) {
     return { status: 422, error: 'The song ID provided is invalid.' };
   }
@@ -19,11 +19,13 @@ export const validateSong = async (songId, user, editOrDelete) => {
     return { status: 422, error: 'The song specified does not exist.' };
   }
 
-  const { byUser, forUser } = song;
-
-  if (!user._id.equals(byUser) && !user._id.equals(forUser)) {
-    return { status: 401, error: `You don't have permission to ${editOrDelete} this song.` };
-  }
+  // const { byUser, forUser } = song;
+  //
+  // if (!user._id.equals(byUser) && !user._id.equals(forUser)) {
+  //   return { status: 401, error: `You don't have permission to ${editUpdateOrDelete} this song.` };
+  // }
 
   return song;
 };
+
+export default validateSong;

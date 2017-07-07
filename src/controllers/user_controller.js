@@ -1,6 +1,6 @@
 import validUrl from 'valid-url';
 import User from '../models/User';
-import tokenForUser from '../helpers/token';
+import tokenForUser from '../services/token';
 
 // Fetch user data for users already signed in
 export const fetchUser = async (req, res) => {

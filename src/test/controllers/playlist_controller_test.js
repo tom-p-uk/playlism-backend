@@ -4,9 +4,9 @@ import request from 'supertest';
 import Playlist from '../../models/Playlist';
 import User from '../../models/User';
 import Song from '../../models/Song';
-import tokenForUser from '../../helpers/token';
+import tokenForUser from '../../services/token';
 
-describe.only('playlistController', () => {
+describe('playlistController', () => {
   let user1, user1Token;
   let user2, user2Token;
 
@@ -303,8 +303,9 @@ describe.only('playlistController', () => {
   /*****************************************************************************
   **************************** .updateLastSongPlayed ***************************
   *****************************************************************************/
-  describe.only('.updateLastSongPlayed', () => {
+  describe('.updateLastSongPlayed', () => {
     let playlist;
+    let song;
 
     beforeEach(async () => {
       playlist = new Playlist({
@@ -313,15 +314,99 @@ describe.only('playlistController', () => {
         forUser: user2,
       });
 
+      song =  new Song({ youTubeUrl: 'https://www.youtube.com/watch?v=wFSvUMxDWak' });
+
       await playlist.save();
+      await song.save();
     });
 
     it('can only be accessed by passing a valid JWT', async () => {
       const res = await request(app)
-        .put(`/playlist/title/${playlist._id}`);
+        .put(`/playlist/lastsongplayed/${playlist._id}`);
 
       expect(res.status).to.equal(401);
       expect(res.text).to.equal('Unauthorized');
+    });
+
+    it('sends an error if an invalid playlist ID is provided', async () => {
+      const res = await request(app)
+        .put(`/playlist/lastsongplayed/12345`)
+        .send({ songId: song._id })
+        .set('authorization', user1Token);
+
+      expect(res.status).to.equal(422);
+      expect(res.body.error).to.exist;
+      expect(res.body.error).to.equal('The playlist ID provided is invalid.');
+    });
+
+    it('sends an error if the playlist does not exist.', async () => {
+      const playlist2 = new Playlist({ title: 'Test Playlist2' });
+      const res = await request(app)
+        .put(`/playlist/lastsongplayed/${playlist2._id}`)
+        .send({ songId: song._id })
+        .set('authorization', user1Token);
+
+      expect(res.status).to.equal(422);
+      expect(res.body.error).to.exist;
+      expect(res.body.error).to.equal('The playlist specified does not exist.');
+    });
+
+    it('sends an error message if a user tries to edit a playlist that is not theirs', async () => {
+      const user3 = new User({
+        firstName: 'Test',
+        lastName: 'User',
+        displayName: 'Test User3',
+      });
+
+      const user3Token = tokenForUser(user3);
+
+      await user3.save();
+
+      const res = await request(app)
+        .put(`/playlist/lastsongplayed/${playlist._id}`)
+        .send({ songId: song._id })
+        .set('authorization', user3Token);
+
+      expect(res.status).to.equal(401);
+      expect(res.body.error).to.exist;
+      expect(res.body.error).to.equal("You don't have permission to update this playlist.");
+    });
+
+    it('sends an error if an invalid song ID is provided', async () => {
+      const res = await request(app)
+        .put(`/playlist/lastsongplayed/${playlist._id}`)
+        .send({ songId: 'A24fadsf' })
+        .set('authorization', user1Token);
+
+      expect(res.status).to.equal(422);
+      expect(res.body.error).to.exist;
+      expect(res.body.error).to.equal('The song ID provided is invalid.');
+    });
+
+    it('sends an error if the song does not exist.', async () => {
+      const song2 = new Playlist({ youTubeUrl: 'https://www.youtube.com/watch?v=RUJMqVkSMh4' });
+      const res = await request(app)
+        .put(`/playlist/lastsongplayed/${playlist._id}`)
+        .send({ songId: song2._id })
+        .set('authorization', user1Token);
+
+      expect(res.status).to.equal(422);
+      expect(res.body.error).to.exist;
+      expect(res.body.error).to.equal('The song specified does not exist.');
+    });
+
+    it("successfully updates a playlist's 'lastSongPlayed' field", async () => {
+      const res = await request(app)
+        .put(`/playlist/lastsongplayed/${playlist._id}`)
+        .send({ songId: song._id })
+        .set('authorization', user1Token);
+
+      const foundPlaylist = await Playlist.findById(playlist._id);
+
+      expect(res.status).to.equal(200);
+      expect(res.body.success).to.exist;
+      expect(res.body.success.playlist.ok).to.equal(1);
+      expect(song._id.equals(foundPlaylist.lastSongPlayed)).to.equal(true);
     });
   });
 });
