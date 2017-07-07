@@ -6,7 +6,7 @@ import request from 'supertest';
 import app from '../../app';
 import tokenForUser from '../../services/token';
 
-describe.only('songController', () => {
+describe('songController', () => {
   let user1, user2;
   let user1Token, user2Token;
   let playlist1, playlist2;
@@ -123,7 +123,9 @@ describe.only('songController', () => {
       expect(foundSongs.length).to.equal(1);
     });
 
-    it.only('prevents songs being added to the same playlist more than once', async () => {
+
+
+    it("sends an error if the provided playlist already exists in a song's 'inPlaylists' array", async () => {
       const song = new Song({ youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4', inPlaylists: [playlist1._id] });
       await song.save();
 
@@ -134,10 +136,33 @@ describe.only('songController', () => {
 
       const foundSongs = await Song.find({});
 
+      expect(res.status).to.equal(422);
+      expect(res.body.error).to.exist;
+      expect(res.body.error).to.equal('That song has already been added to the playlist.' );
+      expect(foundSongs.length).to.equal(1);
+    });
+
+    it("adds a playlist to a song's 'inPlaylists' arr if song already exists", async () => {
+      const song = new Song({ youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4', inPlaylists: [playlist1._id] });
+      await song.save();
+
+      const res = await request(app)
+        .post('/song')
+        .send({ youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4', playlistId: playlist2._id })
+        .set('authorization', user1Token);
+
+      const foundSong = await Song.findOne({ youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4' });
+      console.log(playlist1._id);
+      console.log(playlist2._id);
+      console.log(foundSong.inPlaylists);
+      console.log(res.body.success.inPlaylists);
+
       expect(res.status).to.equal(200);
       expect(res.body.success).to.exist;
       expect(res.body.success.youTubeUrl).to.equal('https://www.youtube.com/watch?v=YoB8t0B4jx4');
-      expect(foundSongs.length).to.equal(1);
+      expect(res.body.success.inPlaylists.length).to.equal(2);
+      expect(foundSong.inPlaylists.indexOf(playlist1._id)).to.not.equal(-1);
+      expect(foundSong.inPlaylists.indexOf(playlist2._id)).to.not.equal(-1);
     });
   });
 });

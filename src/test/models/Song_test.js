@@ -27,7 +27,7 @@ describe('Song', () => {
 
   it('adds a date to the "dateAdded" field', async () => {
     const result = await Song.findById(song._id);
-    console.log(result);
+
     expect(result).to.have.property('dateAdded');
     expect(result.dateAdded).to.be.a('date');
   });
@@ -43,17 +43,17 @@ describe('Song', () => {
     expect(result.likedByUsers[0]._id).to.eql(user1._id);
   });
 
-  it('can add a playlist to the "playlist" field', async () => {
+  it('can add a playlist to the "inPlaylists" array', async () => {
     user1 = new User({ displayName: 'Test User1' });
     user2 = new User({ displayName: 'Test User2' });
     playlist = new Playlist({ title: 'Test Playlist', byUser: user1, forUser: user2 });
-    song.playlist = playlist;
+    song.inPlaylists.push(playlist);
     await user1.save();
     await user2.save();
     await playlist.save();
     await song.save();
 
     const result = await Song.findById(song._id);
-    expect(result.playlist.equals(playlist._id)).to.equal(true);
+    expect(result.inPlaylists[0].equals(playlist._id)).to.equal(true);
   });
 });
