@@ -5,6 +5,7 @@ import Playlist from '../../models/Playlist';
 import User from '../../models/User';
 import Song from '../../models/Song';
 import tokenForUser from '../../services/token';
+import _ from 'lodash';
 
 describe('playlistController', () => {
   let user1, user1Token;
@@ -407,6 +408,110 @@ describe('playlistController', () => {
       expect(res.body.success).to.exist;
       expect(res.body.success.playlist.ok).to.equal(1);
       expect(song._id.equals(foundPlaylist.lastSongPlayed)).to.equal(true);
+    });
+  });
+
+  /*****************************************************************************
+  **************************** .fetchForUserPlaylists **************************
+  *****************************************************************************/
+  describe.only('.fetchForUserPlaylists', () => {
+    let playlist1, playlist2, playlist3;
+
+    beforeEach(async () => {
+      playlist1 = new Playlist({
+        title: 'Playlist1',
+        forUser: user1,
+        byUser: user2,
+      });
+
+      playlist2 = new Playlist({
+        title: 'Playlist2',
+        forUser: user1,
+        byUser: user2,
+      });
+
+      playlist3 = new Playlist({
+        title: 'Playlist3',
+        forUser: user2,
+        byUser: user1,
+      });
+
+      await playlist1.save();
+      await playlist2.save();
+      await playlist3.save();
+    });
+
+    it('can only be accessed by passing a valid JWT', async () => {
+      const res = await request(app)
+        .get(`/playlist/foruser/${user1._id}`);
+
+      expect(res.status).to.equal(401);
+      expect(res.text).to.equal('Unauthorized');
+    });
+
+    it('returns an array of playlists folllowing a successful GET request', async () => {
+      const res = await request(app)
+        .get(`/playlist/foruser/${user1._id}`)
+        .set('authorization', user1Token);
+
+      expect(res.status).to.equal(200);
+      expect(res.body.success).to.exist;
+      expect(res.body.success.length).to.equal(2);
+      expect(_.findIndex(res.body.success, { _id: playlist1._id.toString() })).to.not.equal(-1);
+      expect(_.findIndex(res.body.success, { _id: playlist2._id.toString() })).to.not.equal(-1);
+      expect(_.findIndex(res.body.success, { _id: playlist3._id.toString() })).to.equal(-1);
+    });
+  });
+
+  /*****************************************************************************
+  **************************** .fetchByUserPlaylists ***************************
+  *****************************************************************************/
+  describe.only('.fetchByUserPlaylists', () => {
+    let playlist1, playlist2, playlist3;
+
+    beforeEach(async () => {
+      playlist1 = new Playlist({
+        title: 'Playlist1',
+        forUser: user1,
+        byUser: user2,
+      });
+
+      playlist2 = new Playlist({
+        title: 'Playlist2',
+        forUser: user1,
+        byUser: user2,
+      });
+
+      playlist3 = new Playlist({
+        title: 'Playlist3',
+        forUser: user2,
+        byUser: user1,
+      });
+
+      await playlist1.save();
+      await playlist2.save();
+      await playlist3.save();
+    });
+
+    it('can only be accessed by passing a valid JWT', async () => {
+      const res = await request(app)
+        .get(`/playlist/foruser/${user1._id}`);
+
+      expect(res.status).to.equal(401);
+      expect(res.text).to.equal('Unauthorized');
+    });
+
+    it('returns an array of playlists folllowing a successful GET request', async () => {
+      const res = await request(app)
+        .get(`/playlist/byuser/${user1._id}`)
+        .set('authorization', user1Token);
+
+      expect(res.status).to.equal(200);
+      expect(res.body.success).to.exist;
+      expect(res.body.success.length).to.equal(1);
+      expect(_.findIndex(res.body.success, { _id: playlist1._id.toString() })).to.equal(-1);
+      expect(_.findIndex(res.body.success, { _id: playlist2._id.toString() })).to.equal(-1);
+      expect(_.findIndex(res.body.success, { _id: playlist3._id.toString() })).to.not.equal(-1);
     });
   });
 });

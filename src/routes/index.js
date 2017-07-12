@@ -17,9 +17,11 @@ import {
 } from '../controllers/playlist_controller';
 import {
   addSong,
-  deleteSong,
+  deleteSongFromPlaylist,
   fetchSongsInPlaylist,
-  fetchLikedSongs
+  fetchLikedSongs,
+  likeSong,
+  unlikeSong
 } from '../controllers/song_controller';
 
 const requireAuth = passport.authenticate('jwt', { session: false });
@@ -60,7 +62,9 @@ export default app => {
 
   // Song controller routes
   app.post('/song', requireAuth, addSong);
-  app.delete('/song/:songId', requireAuth, deleteSong);
-  app.get('/song/:playlistId', requireAuth, fetchSongsInPlaylist);
-  app.get('/song/liked', requireAuth, fetchLikedSongs);
+  app.delete('/song/:playlistId/:songId', requireAuth, deleteSongFromPlaylist);
+  app.get('/song/playlist/:playlistId', requireAuth, fetchSongsInPlaylist);
+  app.get('/song', requireAuth, fetchLikedSongs);
+  app.put('/song/like/:songId', requireAuth, likeSong);
+  app.put('/song/unlike/:songId', requireAuth, unlikeSong);
 };

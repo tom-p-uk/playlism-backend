@@ -105,10 +105,26 @@ export const updateLastSongPlayed = async (req, res) => {
   }
 };
 
-export const fetchForUserPlaylists = (req, res) => {  // TODO
-  res.send('a');
+export const fetchForUserPlaylists = async (req, res) => {
+  const { user } = req;
+
+  try {
+    const playlists = await Playlist.find({ forUser: user._id });
+    res.status(200).send({ success: playlists });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ error: 'Playlists could not be retrieved.' });
+  }
 };
 
-export const fetchByUserPlaylists = (req, res) => {  // TODO
-  res.send('a');
+export const fetchByUserPlaylists = async (req, res) => {
+  const { user } = req;
+
+  try {
+    const playlists = await Playlist.find({ byUser: user._id });
+    res.status(200).send({ success: playlists });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ error: 'Playlists could not be retrieved.' });
+  }
 };

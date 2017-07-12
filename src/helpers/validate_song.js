@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import Song from '../models/Song';
 
-const validateSong = async (songId, user, editUpdateOrDelete) => {
+const validateSong = async (songId, user, accessEditUpdateOrDelete) => {
   if (!mongoose.Types.ObjectId.isValid(songId)) {
     return { status: 422, error: 'The song ID provided is invalid.' };
   }
