@@ -118,15 +118,13 @@ describe('songController', () => {
         .send({ youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4', playlistId: playlist1._id })
         .set('authorization', user1Token);
 
-      const foundSongs = await Song.find({}).populate('inPlaylists');
+      const foundSongs = await Song.find({});
 
       expect(res.status).to.equal(200);
       expect(res.body.success).to.exist;
       expect(res.body.success.youTubeUrl).to.equal('https://www.youtube.com/watch?v=YoB8t0B4jx4');
       expect(foundSongs.length).to.equal(1);
     });
-
-
 
     it("sends an error if the provided playlist already exists in a song's 'inPlaylists' array", async () => {
       const song = new Song({ youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4', inPlaylists: [playlist1._id] });
@@ -164,8 +162,6 @@ describe('songController', () => {
       expect(res.body.success).to.exist;
       expect(res.body.success.youTubeUrl).to.equal('https://www.youtube.com/watch?v=YoB8t0B4jx4');
       expect(res.body.success.inPlaylists.length).to.equal(2);
-      expect(foundSong.inPlaylists.indexOf(playlist1._id)).to.not.equal(-1);
-      expect(foundSong.inPlaylists.indexOf(playlist2._id)).to.not.equal(-1);
     });
   });
 

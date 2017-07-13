@@ -414,7 +414,7 @@ describe('playlistController', () => {
   /*****************************************************************************
   **************************** .fetchForUserPlaylists **************************
   *****************************************************************************/
-  describe.only('.fetchForUserPlaylists', () => {
+  describe('.fetchForUserPlaylists', () => {
     let playlist1, playlist2, playlist3;
 
     beforeEach(async () => {
@@ -466,7 +466,7 @@ describe('playlistController', () => {
   /*****************************************************************************
   **************************** .fetchByUserPlaylists ***************************
   *****************************************************************************/
-  describe.only('.fetchByUserPlaylists', () => {
+  describe('.fetchByUserPlaylists', () => {
     let playlist1, playlist2, playlist3;
 
     beforeEach(async () => {

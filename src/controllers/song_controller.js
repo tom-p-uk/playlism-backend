@@ -50,7 +50,7 @@ export const deleteSongFromPlaylist  = async (req, res) => {
   const { playlistId, songId } = req.params;
 
   const playlist = await validatePlaylist(playlistId, user, 'update');
-  const song = await validateSong(songId, user, 'delete');
+  const song = await validateSong(songId, user);
 
   if (playlist.error) {
     const { status, error } = playlist;

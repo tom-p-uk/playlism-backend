@@ -4,6 +4,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import morgan from 'morgan';
 import passport from 'passport';
+import helmet from 'helmet';
 import _ from './env';
 import routes from './routes';
 
@@ -17,6 +18,7 @@ if (process.env.NODE_ENV !== 'test') {
     .on('error', err => console.warn(err));
 }
 
+app.use(helmet());
 app.use(bodyParser.json({ type: '*/*' }));
 app.use(bodyParser.urlencoded({ type: '*/x-www-form-urlencoded', extended: true }));
 app.use(cors());
