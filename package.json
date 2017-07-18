@@ -2,18 +2,19 @@
   "name": "playlism_backend",
   "version": "1.0.0",
   "description": "",
-  "main": "server/app.js",
+  "main": "dist/app.js",
   "scripts": {
-    "start": "node src/index.js",
+    "start": "node dist/app.js",
     "dev": "nodemon src/app.js --exec babel-node --presets es2015,stage-2 --require babel-polyfill",
     "test": "nodemon --exec 'NODE_ENV=\"test\" mocha ./src -t 5000 --recursive --compilers js:babel-core/register --require babel-polyfill'",
-    "build": "babel src -d dist --presets es2015,stage-2",
+    "build": "babel src -d dist --exec babel-node --presets es2015,stage-2 --compilers js:babel-core/register --require babel-polyfill",
     "serve": "node dist/app.js"
   },
   "author": "Tom Price",
   "license": "ISC",
   "dependencies": {
     "axios": "^0.15.3",
+    "babel-plugin-transform-runtime": "^6.23.0",
     "bcrypt": "^1.0.2",
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.17.1",
