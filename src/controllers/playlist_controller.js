@@ -1,9 +1,9 @@
 import Playlist from '../models/Playlist';
 import Song from '../models/Song';
-import tokenForUser from '../services/token';
+import tokenForUser from '../utils/token';
 import mongoose from 'mongoose';
-import validateSong from '../helpers/validate_song';
-import validatePlaylist from '../helpers/validate_playlist';
+import validateSong from '../utils/validate_song';
+import validatePlaylist from '../utils/validate_playlist';
 
 export const createPlaylist = async (req, res) => {
   const { title, forUser } = req.body;
@@ -13,6 +13,7 @@ export const createPlaylist = async (req, res) => {
     title,
     forUser,
     byUser,
+    lastUpdated: Date.now(),
   });
 
   try {
@@ -110,7 +111,7 @@ export const fetchForUserPlaylists = async (req, res) => {
 
   try {
     const playlists = await Playlist.find({ forUser: user._id });
-    res.status(200).send({ success: playlists });
+    res.status(200).send({ success: { playlists } });
   } catch (err) {
     console.log(err);
     res.status(500).send({ error: 'Playlists could not be retrieved.' });
@@ -122,7 +123,7 @@ export const fetchByUserPlaylists = async (req, res) => {
 
   try {
     const playlists = await Playlist.find({ byUser: user._id });
-    res.status(200).send({ success: playlists });
+    res.status(200).send({ success: { playlists } });
   } catch (err) {
     console.log(err);
     res.status(500).send({ error: 'Playlists could not be retrieved.' });

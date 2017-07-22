@@ -4,7 +4,7 @@ import Playlist from '../../models/Playlist';
 import { expect } from 'chai';
 import request from 'supertest';
 import app from '../../app';
-import tokenForUser from '../../services/token';
+import tokenForUser from '../../utils/token';
 
 describe('songController', () => {
   let user1, user2;
@@ -51,7 +51,7 @@ describe('songController', () => {
   describe('.addSong', () => {
     it('can only be accessed by passing a valid JWT', async () => {
       const res = await request(app)
-        .post('/song');
+        .post('/api/song');
 
       expect(res.status).to.equal(401);
       expect(res.text).to.equal('Unauthorized');
@@ -59,7 +59,7 @@ describe('songController', () => {
 
     it('sends an error if a youTubeUrl is not provided', async () => {
       const res = await request(app)
-        .post('/song')
+        .post('/api/song')
         .set('authorization', user1Token);
 
       const foundSongs = await Song.find({});
@@ -72,7 +72,7 @@ describe('songController', () => {
 
     it('sends an error if an invalid youTubeUrl is provided', async () => {
       const res = await request(app)
-        .post('/song')
+        .post('/api/song')
         .send({ youTubeUrl: 'https://www.youtube.com/YoB8t0B4jx4'})
         .set('authorization', user1Token);
 
@@ -86,7 +86,7 @@ describe('songController', () => {
 
     it('sends an error if a playlistId is not provided', async () => {
       const res = await request(app)
-        .post('/song')
+        .post('/api/song')
         .send({ youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4' })
         .set('authorization', user1Token);
 
@@ -100,7 +100,7 @@ describe('songController', () => {
 
     it('sends an error if the playlistId provided is invalid', async () => {
       const res = await request(app)
-        .post('/song')
+        .post('/api/song')
         .send({ youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4', playlistId: 'abc' })
         .set('authorization', user1Token);
 
@@ -114,7 +114,7 @@ describe('songController', () => {
 
     it('adds a song following a successful POST request', async () => {
       const res = await request(app)
-        .post('/song')
+        .post('/api/song')
         .send({ youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4', playlistId: playlist1._id })
         .set('authorization', user1Token);
 
@@ -122,8 +122,9 @@ describe('songController', () => {
 
       expect(res.status).to.equal(200);
       expect(res.body.success).to.exist;
-      expect(res.body.success.youTubeUrl).to.equal('https://www.youtube.com/watch?v=YoB8t0B4jx4');
+      expect(res.body.success.song.youTubeUrl).to.equal('https://www.youtube.com/watch?v=YoB8t0B4jx4');
       expect(foundSongs.length).to.equal(1);
+      expect(foundSongs[0].inPlaylists[0].equals(playlist1._id)).to.equal(true);
     });
 
     it("sends an error if the provided playlist already exists in a song's 'inPlaylists' array", async () => {
@@ -131,7 +132,7 @@ describe('songController', () => {
       await song.save();
 
       const res = await request(app)
-        .post('/song')
+        .post('/api/song')
         .send({ youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4', playlistId: playlist1._id })
         .set('authorization', user1Token);
 
@@ -148,20 +149,19 @@ describe('songController', () => {
       await song.save();
 
       const res = await request(app)
-        .post('/song')
+        .post('/api/song')
         .send({ youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4', playlistId: playlist2._id })
         .set('authorization', user1Token);
 
       const foundSong = await Song.findOne({ youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4' });
-      console.log(playlist1._id);
-      console.log(playlist2._id);
-      console.log(foundSong.inPlaylists);
-      console.log(res.body.success.inPlaylists);
 
       expect(res.status).to.equal(200);
       expect(res.body.success).to.exist;
-      expect(res.body.success.youTubeUrl).to.equal('https://www.youtube.com/watch?v=YoB8t0B4jx4');
-      expect(res.body.success.inPlaylists.length).to.equal(2);
+      expect(res.body.success.song.youTubeUrl).to.equal('https://www.youtube.com/watch?v=YoB8t0B4jx4');
+      expect(res.body.success.song.inPlaylists.length).to.equal(2);
+      expect(foundSong.inPlaylists.length).to.equal(2);
+      expect(foundSong.inPlaylists.indexOf(playlist1._id)).to.not.equal(-1);
+      expect(foundSong.inPlaylists.indexOf(playlist2._id)).to.not.equal(-1);
     });
   });
 
@@ -181,7 +181,7 @@ describe('songController', () => {
 
     it('can only be accessed by passing a valid JWT', async () => {
       const res = await request(app)
-        .delete(`/song/${playlist1._id}/${song._id}`);
+        .delete(`/api/song/${playlist1._id}/${song._id}`);
 
       expect(res.status).to.equal(401);
       expect(res.text).to.equal('Unauthorized');
@@ -189,7 +189,7 @@ describe('songController', () => {
 
     it('sends an error if an invalid song ID is provided', async () => {
       const res = await request(app)
-        .delete(`/song/${playlist1._id}/12345`)
+        .delete(`/api/song/${playlist1._id}/12345`)
         .set('authorization', user1Token);
 
       expect(res.status).to.equal(422);
@@ -200,7 +200,7 @@ describe('songController', () => {
     it('sends an error if the song does not exist', async () => {
       const song2 = new Song({ youTubeUrl: 'https://www.youtube.com/watch?v=RUJMqVkSMh4' });
       const res = await request(app)
-        .delete(`/song/${playlist1._id}/${song2._id}`)
+        .delete(`/api/song/${playlist1._id}/${song2._id}`)
         .set('authorization', user1Token);
 
       expect(res.status).to.equal(422);
@@ -210,7 +210,7 @@ describe('songController', () => {
 
     it('sends an error if an invalid playlist ID is provided', async () => {
       const res = await request(app)
-        .delete(`/song/12345/${song._id}`)
+        .delete(`/api/song/12345/${song._id}`)
         .set('authorization', user1Token);
 
       expect(res.status).to.equal(422);
@@ -221,7 +221,7 @@ describe('songController', () => {
     it('sends an error if the playlist does not exist.', async () => {
       const playlist3 = new Playlist({ title: 'Test Playlist3' });
       const res = await request(app)
-        .delete(`/song/${playlist3._id}/${song._id}`)
+        .delete(`/api/song/${playlist3._id}/${song._id}`)
         .set('authorization', user1Token);
 
       expect(res.status).to.equal(422);
@@ -231,7 +231,7 @@ describe('songController', () => {
 
     it("removes a playlist from a song's 'inPlaylists' array", async () => {
       const res = await request(app)
-        .delete(`/song/${playlist1._id}/${song._id}`)
+        .delete(`/api/song/${playlist1._id}/${song._id}`)
         .set('authorization', user1Token);
 
       const foundSong = await Song.findById(song._id);
@@ -247,7 +247,7 @@ describe('songController', () => {
       await song2.save();
 
       const res = await request(app)
-        .delete(`/song/${playlist1._id}/${song2._id}`)
+        .delete(`/api/song/${playlist1._id}/${song2._id}`)
         .set('authorization', user1Token);
 
       const foundSong = await Song.findById(song2._id);
@@ -281,7 +281,7 @@ describe('songController', () => {
 
     it('can only be accessed by passing a valid JWT', async () => {
       const res = await request(app)
-        .get(`/song/playlist/${playlist1._id}`);
+        .get(`/api/song/playlist/${playlist1._id}`);
 
       expect(res.status).to.equal(401);
       expect(res.text).to.equal('Unauthorized');
@@ -289,7 +289,7 @@ describe('songController', () => {
 
     it('sends an error if an invalid playlist ID is provided', async () => {
       const res = await request(app)
-        .get(`/song/playlist/12345`)
+        .get(`/api/song/playlist/12345`)
         .set('authorization', user1Token);
 
       expect(res.status).to.equal(422);
@@ -300,7 +300,7 @@ describe('songController', () => {
     it('sends an error if the playlist does not exist', async () => {
       const playlist3 = new Playlist({ title: 'Test Playlist3' });
       const res = await request(app)
-        .get(`/song/playlist/${playlist3._id}`)
+        .get(`/api/song/playlist/${playlist3._id}`)
         .set('authorization', user1Token);
 
       expect(res.status).to.equal(422);
@@ -319,7 +319,7 @@ describe('songController', () => {
       await user3.save();
 
       const res = await request(app)
-        .get(`/song/playlist/${playlist1._id}`)
+        .get(`/api/song/playlist/${playlist1._id}`)
         .set('authorization', user3Token);
 
         expect(res.status).to.equal(401);
@@ -329,21 +329,19 @@ describe('songController', () => {
 
     it('fetches a list of songs that match the provided playlist', async () => {
       const res1 = await request(app)
-        .get(`/song/playlist/${playlist1._id}`)
+        .get(`/api/song/playlist/${playlist1._id}`)
         .set('authorization', user1Token);
 
       const res2 = await request(app)
-        .get(`/song/playlist/${playlist2._id}`)
+        .get(`/api/song/playlist/${playlist2._id}`)
         .set('authorization', user1Token);
 
       expect(res1.status).to.equal(200);
       expect(res1.body.success).to.exist;
-      expect(res1.body.success).to.exist;
-      expect(res1.body.success.length).to.equal(2);
+      expect(res1.body.success.songs.length).to.equal(2);
       expect(res2.status).to.equal(200);
       expect(res2.body.success).to.exist;
-      expect(res2.body.success).to.exist;
-      expect(res2.body.success.length).to.equal(1);
+      expect(res2.body.success.songs.length).to.equal(1);
     });
   });
 
@@ -386,7 +384,7 @@ describe('songController', () => {
 
     it('can only  be accessed by passing a valid JWT', async () => {
       const res = await request(app)
-        .get('/song');
+        .get('/api/song/liked');
 
       expect(res.status).to.equal(401);
       expect(res.text).to.equal('Unauthorized');
@@ -394,19 +392,19 @@ describe('songController', () => {
 
     it('sends a list of songs liked by the user', async () => {
       const res1 = await request(app)
-        .get('/song')
+        .get('/api/song/liked')
         .set('authorization', user1Token);
 
         const res2 = await request(app)
-          .get('/song')
+          .get('/api/song/liked')
           .set('authorization', user2Token);
 
       expect(res1.status).to.equal(200);
       expect(res1.body.success).to.exist;
-      expect(res1.body.success.length).to.equal(3);
+      expect(res1.body.success.songs.length).to.equal(3);
       expect(res2.status).to.equal(200);
       expect(res2.body.success).to.exist;
-      expect(res2.body.success.length).to.equal(2);
+      expect(res2.body.success.songs.length).to.equal(2);
     });
   });
 
@@ -427,7 +425,7 @@ describe('songController', () => {
 
     it('can only  be accessed by passing a valid JWT', async () => {
       const res = await request(app)
-        .put(`/song/like/${song._id}`);
+        .put(`/api/song/like/${song._id}`);
 
       expect(res.status).to.equal(401);
       expect(res.text).to.equal('Unauthorized');
@@ -435,7 +433,7 @@ describe('songController', () => {
 
     it('sends an error if an invalid song ID is provided', async () => {
       const res = await request(app)
-        .put(`/song/like/12345`)
+        .put(`/api/song/like/12345`)
         .set('authorization', user1Token);
 
       expect(res.status).to.equal(422);
@@ -450,7 +448,7 @@ describe('songController', () => {
       });
 
       const res = await request(app)
-        .put(`/song/like/${song2._id}`)
+        .put(`/api/song/like/${song2._id}`)
         .set('authorization', user1Token);
 
       expect(res.status).to.equal(422);
@@ -460,7 +458,7 @@ describe('songController', () => {
 
     it("adds a user to a song's 'likedByUsers' array", async () => {
       const res = await request(app)
-      .put(`/song/like/${song._id}`)
+      .put(`/api/song/like/${song._id}`)
       .set('authorization', user1Token);
 
       const foundSong = await Song.findById(song._id);
@@ -490,7 +488,7 @@ describe('songController', () => {
 
     it('can only  be accessed by passing a valid JWT', async () => {
       const res = await request(app)
-        .put(`/song/unlike/${song._id}`);
+        .put(`/api/song/unlike/${song._id}`);
 
       expect(res.status).to.equal(401);
       expect(res.text).to.equal('Unauthorized');
@@ -498,7 +496,7 @@ describe('songController', () => {
 
     it('sends an error if an invalid song ID is provided', async () => {
       const res = await request(app)
-        .put(`/song/unlike/12345`)
+        .put(`/api/song/unlike/12345`)
         .set('authorization', user1Token);
 
       expect(res.status).to.equal(422);
@@ -513,7 +511,7 @@ describe('songController', () => {
       });
 
       const res = await request(app)
-        .put(`/song/unlike/${song2._id}`)
+        .put(`/api/song/unlike/${song2._id}`)
         .set('authorization', user1Token);
 
       expect(res.status).to.equal(422);
@@ -523,7 +521,7 @@ describe('songController', () => {
 
     it("removes a user from a song's 'likedByUsers' array", async () => {
       const res = await request(app)
-        .put(`/song/unlike/${song._id}`)
+        .put(`/api/song/unlike/${song._id}`)
         .set('authorization', user1Token);
 
       const foundSong = await Song.findById(song._id);

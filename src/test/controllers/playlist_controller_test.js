@@ -4,7 +4,7 @@ import request from 'supertest';
 import Playlist from '../../models/Playlist';
 import User from '../../models/User';
 import Song from '../../models/Song';
-import tokenForUser from '../../services/token';
+import tokenForUser from '../../utils/token';
 import _ from 'lodash';
 
 describe('playlistController', () => {
@@ -38,7 +38,7 @@ describe('playlistController', () => {
   describe('.createPlaylist', () => {
     it('can only be accessed by passing a valid JWT', async () => {
       const res = await request(app)
-        .post('/playlist');
+        .post('/api/playlist');
 
       expect(res.status).to.equal(401);
       expect(res.text).to.equal('Unauthorized');
@@ -46,7 +46,7 @@ describe('playlistController', () => {
 
     it('creates a new playlist following a successful POST request', async () => {
       const res = await request(app)
-        .post('/playlist')
+        .post('/api/playlist')
         .send({ title: 'Test Playlist', forUser: user2 })
         .set('authorization', user1Token);
 
@@ -58,7 +58,7 @@ describe('playlistController', () => {
 
     it('throws an error if the title is not provided', async () => {
       const res = await request(app)
-        .post('/playlist')
+        .post('/api/playlist')
         .send({ forUser: user2 })
         .set('authorization', user1Token);
 
@@ -72,7 +72,7 @@ describe('playlistController', () => {
 
     it('throws an error if the title provided is too short', async () => {
       const res = await request(app)
-        .post('/playlist')
+        .post('/api/playlist')
         .send({ title: 'A', forUser: user2 })
         .set('authorization', user1Token);
 
@@ -86,7 +86,7 @@ describe('playlistController', () => {
 
     it('throws an error if the title provided is too long', async () => {
       const res = await request(app)
-        .post('/playlist')
+        .post('/api/playlist')
         .send({ title: '123456789012345678901234567890123456789012345678901', forUser: user2 })
         .set('authorization', user1Token);
 
@@ -100,7 +100,7 @@ describe('playlistController', () => {
 
     it('throws an error if "forUser" data is not provided', async () => {
       const res = await request(app)
-        .post('/playlist')
+        .post('/api/playlist')
         .send({ title: 'Test Playlist' })
         .set('authorization', user1Token);
 
@@ -131,7 +131,7 @@ describe('playlistController', () => {
 
     it('can only be accessed by passing a valid JWT', async () => {
       const res = await request(app)
-        .delete(`/playlist/${playlist._id}`);
+        .delete(`/api/playlist/${playlist._id}`);
 
       expect(res.status).to.equal(401);
       expect(res.text).to.equal('Unauthorized');
@@ -139,7 +139,7 @@ describe('playlistController', () => {
 
     it('sends an error if an invalid playlist ID is provided', async () => {
       const res = await request(app)
-        .delete(`/playlist/12345`)
+        .delete(`/api/playlist/12345`)
         .set('authorization', user1Token);
 
       expect(res.status).to.equal(422);
@@ -150,7 +150,7 @@ describe('playlistController', () => {
     it('sends an error if the playlist does not exist.', async () => {
       const playlist2 = new Playlist({ title: 'Test Playlist2' });
       const res = await request(app)
-        .delete(`/playlist/${playlist2._id}`)
+        .delete(`/api/playlist/${playlist2._id}`)
         .set('authorization', user1Token);
 
       expect(res.status).to.equal(422);
@@ -170,7 +170,7 @@ describe('playlistController', () => {
       await user3.save();
 
       const res = await request(app)
-        .delete(`/playlist/${playlist._id}`)
+        .delete(`/api/playlist/${playlist._id}`)
         .set('authorization', user3Token);
 
       expect(res.status).to.equal(401);
@@ -180,7 +180,7 @@ describe('playlistController', () => {
 
     it('allows the "byUser" to delete a playlist', async () => {
       const res = await request(app)
-        .delete(`/playlist/${playlist._id}`)
+        .delete(`/api/playlist/${playlist._id}`)
         .set('authorization', user1Token);
 
       const deletedPlaylist = await Playlist.findById(playlist._id);
@@ -193,7 +193,7 @@ describe('playlistController', () => {
 
     it('allows the "forUser" to delete a playlist', async () => {
       const res = await request(app)
-        .delete(`/playlist/${playlist._id}`)
+        .delete(`/api/playlist/${playlist._id}`)
         .set('authorization', user2Token);
 
       const deletedPlaylist = await Playlist.findById(playlist._id);
@@ -223,7 +223,7 @@ describe('playlistController', () => {
 
     it('can only be accessed by passing a valid JWT', async () => {
       const res = await request(app)
-        .put(`/playlist/title/${playlist._id}`);
+        .put(`/api/playlist/title/${playlist._id}`);
 
       expect(res.status).to.equal(401);
       expect(res.text).to.equal('Unauthorized');
@@ -231,7 +231,7 @@ describe('playlistController', () => {
 
     it('sends an error if an invalid playlist ID is provided', async () => {
       const res = await request(app)
-        .put(`/playlist/title/12345`)
+        .put(`/api/playlist/title/12345`)
         .send({ title: 'New Title' })
         .set('authorization', user1Token);
 
@@ -243,7 +243,7 @@ describe('playlistController', () => {
     it('sends an error if the playlist does not exist.', async () => {
       const playlist2 = new Playlist({ title: 'Test Playlist2' });
       const res = await request(app)
-        .put(`/playlist/title/${playlist2._id}`)
+        .put(`/api/playlist/title/${playlist2._id}`)
         .send({ title: 'New Title' })
         .set('authorization', user1Token);
 
@@ -264,7 +264,7 @@ describe('playlistController', () => {
       await user3.save();
 
       const res = await request(app)
-        .put(`/playlist/title/${playlist._id}`)
+        .put(`/api/playlist/title/${playlist._id}`)
         .set('authorization', user3Token);
 
       expect(res.status).to.equal(401);
@@ -274,7 +274,7 @@ describe('playlistController', () => {
 
     it('allows the "byUser" to edit a playlist title', async () => {
       const res = await request(app)
-        .put(`/playlist/title/${playlist._id}`)
+        .put(`/api/playlist/title/${playlist._id}`)
         .send({ title: 'New Title' })
         .set('authorization', user1Token);
 
@@ -288,7 +288,7 @@ describe('playlistController', () => {
 
     it('allows the "forUser" to edit a playlist title', async () => {
       const res = await request(app)
-        .put(`/playlist/title/${playlist._id}`)
+        .put(`/api/playlist/title/${playlist._id}`)
         .send({ title: 'New Title' })
         .set('authorization', user2Token);
 
@@ -323,7 +323,7 @@ describe('playlistController', () => {
 
     it('can only be accessed by passing a valid JWT', async () => {
       const res = await request(app)
-        .put(`/playlist/lastsongplayed/${playlist._id}`);
+        .put(`/api/playlist/lastsongplayed/${playlist._id}`);
 
       expect(res.status).to.equal(401);
       expect(res.text).to.equal('Unauthorized');
@@ -331,7 +331,7 @@ describe('playlistController', () => {
 
     it('sends an error if an invalid playlist ID is provided', async () => {
       const res = await request(app)
-        .put(`/playlist/lastsongplayed/12345`)
+        .put(`/api/playlist/lastsongplayed/12345`)
         .send({ songId: song._id })
         .set('authorization', user1Token);
 
@@ -343,7 +343,7 @@ describe('playlistController', () => {
     it('sends an error if the playlist does not exist.', async () => {
       const playlist2 = new Playlist({ title: 'Test Playlist2' });
       const res = await request(app)
-        .put(`/playlist/lastsongplayed/${playlist2._id}`)
+        .put(`/api/playlist/lastsongplayed/${playlist2._id}`)
         .send({ songId: song._id })
         .set('authorization', user1Token);
 
@@ -364,7 +364,7 @@ describe('playlistController', () => {
       await user3.save();
 
       const res = await request(app)
-        .put(`/playlist/lastsongplayed/${playlist._id}`)
+        .put(`/api/playlist/lastsongplayed/${playlist._id}`)
         .send({ songId: song._id })
         .set('authorization', user3Token);
 
@@ -375,7 +375,7 @@ describe('playlistController', () => {
 
     it('sends an error if an invalid song ID is provided', async () => {
       const res = await request(app)
-        .put(`/playlist/lastsongplayed/${playlist._id}`)
+        .put(`/api/playlist/lastsongplayed/${playlist._id}`)
         .send({ songId: 'A24fadsf' })
         .set('authorization', user1Token);
 
@@ -387,7 +387,7 @@ describe('playlistController', () => {
     it('sends an error if the song does not exist.', async () => {
       const song2 = new Playlist({ youTubeUrl: 'https://www.youtube.com/watch?v=RUJMqVkSMh4' });
       const res = await request(app)
-        .put(`/playlist/lastsongplayed/${playlist._id}`)
+        .put(`/api/playlist/lastsongplayed/${playlist._id}`)
         .send({ songId: song2._id })
         .set('authorization', user1Token);
 
@@ -398,7 +398,7 @@ describe('playlistController', () => {
 
     it("successfully updates a playlist's 'lastSongPlayed' field", async () => {
       const res = await request(app)
-        .put(`/playlist/lastsongplayed/${playlist._id}`)
+        .put(`/api/playlist/lastsongplayed/${playlist._id}`)
         .send({ songId: song._id })
         .set('authorization', user1Token);
 
@@ -443,7 +443,7 @@ describe('playlistController', () => {
 
     it('can only be accessed by passing a valid JWT', async () => {
       const res = await request(app)
-        .get(`/playlist/foruser/${user1._id}`);
+        .get(`/api/playlist/foruser/${user1._id}`);
 
       expect(res.status).to.equal(401);
       expect(res.text).to.equal('Unauthorized');
@@ -451,15 +451,15 @@ describe('playlistController', () => {
 
     it('returns an array of playlists folllowing a successful GET request', async () => {
       const res = await request(app)
-        .get(`/playlist/foruser/${user1._id}`)
+        .get(`/api/playlist/foruser/${user1._id}`)
         .set('authorization', user1Token);
 
       expect(res.status).to.equal(200);
       expect(res.body.success).to.exist;
-      expect(res.body.success.length).to.equal(2);
-      expect(_.findIndex(res.body.success, { _id: playlist1._id.toString() })).to.not.equal(-1);
-      expect(_.findIndex(res.body.success, { _id: playlist2._id.toString() })).to.not.equal(-1);
-      expect(_.findIndex(res.body.success, { _id: playlist3._id.toString() })).to.equal(-1);
+      expect(res.body.success.playlists.length).to.equal(2);
+      expect(_.findIndex(res.body.success.playlists, { _id: playlist1._id.toString() })).to.not.equal(-1);
+      expect(_.findIndex(res.body.success.playlists, { _id: playlist2._id.toString() })).to.not.equal(-1);
+      expect(_.findIndex(res.body.success.playlists, { _id: playlist3._id.toString() })).to.equal(-1);
     });
   });
 
@@ -495,7 +495,7 @@ describe('playlistController', () => {
 
     it('can only be accessed by passing a valid JWT', async () => {
       const res = await request(app)
-        .get(`/playlist/foruser/${user1._id}`);
+        .get(`/api/playlist/foruser/${user1._id}`);
 
       expect(res.status).to.equal(401);
       expect(res.text).to.equal('Unauthorized');
@@ -503,15 +503,15 @@ describe('playlistController', () => {
 
     it('returns an array of playlists folllowing a successful GET request', async () => {
       const res = await request(app)
-        .get(`/playlist/byuser/${user1._id}`)
+        .get(`/api/playlist/byuser/${user1._id}`)
         .set('authorization', user1Token);
 
       expect(res.status).to.equal(200);
       expect(res.body.success).to.exist;
-      expect(res.body.success.length).to.equal(1);
-      expect(_.findIndex(res.body.success, { _id: playlist1._id.toString() })).to.equal(-1);
-      expect(_.findIndex(res.body.success, { _id: playlist2._id.toString() })).to.equal(-1);
-      expect(_.findIndex(res.body.success, { _id: playlist3._id.toString() })).to.not.equal(-1);
+      expect(res.body.success.playlists.length).to.equal(1);
+      expect(_.findIndex(res.body.success.playlists, { _id: playlist1._id.toString() })).to.equal(-1);
+      expect(_.findIndex(res.body.success.playlists, { _id: playlist2._id.toString() })).to.equal(-1);
+      expect(_.findIndex(res.body.success.playlists, { _id: playlist3._id.toString() })).to.not.equal(-1);
     });
   });
 });

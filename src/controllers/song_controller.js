@@ -1,6 +1,7 @@
 import Song from '../models/Song';
-import validateSong from '../helpers/validate_song';
-import validatePlaylist from '../helpers/validate_playlist';
+import Playlist from '../models/Playlist';
+import validateSong from '../utils/validate_song';
+import validatePlaylist from '../utils/validate_playlist';
 import validateUrl from 'youtube-url';
 import mongoose from 'mongoose';
 import _ from 'lodash';
@@ -33,12 +34,13 @@ export const addSong = async (req, res) => {
       song.inPlaylists.push(playlist); // Else push playlist to song's inPlaylists array
     }
   } else {
-    song = new Song({ youTubeUrl, inPlaylists: [] }); // If song doesn't exist, create new instance
+    song = new Song({ youTubeUrl, inPlaylists: [playlist] }); // If song doesn't exist, create new instance
   }
 
   try {
-    song.save();
-    res.status(200).send({ success: song });
+    await song.save();
+    await Playlist.findByIdAndUpdate(playlist, { lastUpdated: Date.now() });
+    res.status(200).send({ success: { song } });
   } catch (err) {
     console.log(err);
     res.status(500).send({ error: 'The song could not be added.' });
@@ -66,7 +68,7 @@ export const deleteSongFromPlaylist  = async (req, res) => {
   if (inPlaylists.length > 0) {
     try {
       const updatedSong = await song.update({ inPlaylists });
-      res.status(200).send({ success: updatedSong });
+      res.status(200).send({ success: { song: updatedSong } });
     } catch (err) {
       res.status(500).send({ error: 'Song could not deleted.' })
     }
@@ -74,7 +76,7 @@ export const deleteSongFromPlaylist  = async (req, res) => {
   } else {
     try {
       const deletedSong = await song.remove();
-      res.status(200).send({ success: deletedSong });
+      res.status(200).send({ success: { song: deletedSong } });
     } catch (err) {
       console.log(err);
       res.status(500).send({ error: 'Song could not deleted.' })
@@ -95,7 +97,7 @@ export const fetchSongsInPlaylist  = async (req, res) => {
 
   try {
     const songs = await Song.find({ inPlaylists: { '$in' : [playlist._id]} });
-    res.status(200).send({ success: songs });
+    res.status(200).send({ success: { songs } });
   } catch (err) {
     console.log(err);
     res.status(500).send({ error: 'Songs could not be retrieved.' });
@@ -108,7 +110,7 @@ export const fetchLikedSongs = async (req, res) => {
 
   try {
     const songs = await Song.find({ likedByUsers: { '$in' : [user._id]} });
-    res.status(200).send({ success: songs });
+    res.status(200).send({ success: { songs } });
   } catch (err) {
     console.log(err);
     res.status(500).send({ error: 'Songs could not be retrieved.' });
@@ -132,7 +134,7 @@ export const likeSong = async (req, res) => { // TODO
 
   try {
     const updatedSong = await song.update({ likedByUsers });
-    res.status(200).send({ success: updatedSong });
+    res.status(200).send({ success: { song: updatedSong } });
   } catch (err) {
     console.log(err);
     res.status(500).send({ error: 'Song could not be updated.' });
@@ -155,7 +157,7 @@ export const unlikeSong = async (req, res) => { // TODO
 
   try {
     const updatedSong = await song.update({ likedByUsers });
-    res.status(200).send({ success: updatedSong });
+    res.status(200).send({ success: { song: updatedSong } });
   } catch (err) {
     console.log(err);
     res.status(500).send({ error: 'Song could not be updated.' });
