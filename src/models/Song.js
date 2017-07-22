@@ -1,5 +1,4 @@
 import mongoose, { Schema } from 'mongoose';
-import findOrCreate from 'findorcreate-promise';
 
 mongoose.Promise = global.Promise;
 
@@ -21,8 +20,6 @@ const SongSchema = new Schema({
     ref: 'playlist',
   }],
 });
-
-SongSchema.plugin(findOrCreate);
 
 const Song = mongoose.model('song', SongSchema);
 

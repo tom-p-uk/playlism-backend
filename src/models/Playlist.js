@@ -27,6 +27,7 @@ const PlaylistSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'song',
   },
+  lastUpdated: Date,
 });
 
 const Playlist = mongoose.model('playlist', PlaylistSchema);

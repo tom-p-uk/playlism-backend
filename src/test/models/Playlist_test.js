@@ -22,6 +22,7 @@ describe('Playlist', () => {
       byUser: user2,
       songs: [song1, song2],
       lastSongPlayed: song1,
+      lastUpdated: Date.now(),
     });
 
     try {
@@ -69,6 +70,12 @@ describe('Playlist', () => {
     const result = await Playlist.findById(playlist._id).populate('lastSongPlayed');
     expect(result).to.have.property('lastSongPlayed');
     expect(result.lastSongPlayed._id).to.eql(song1._id);
+  });
+
+  it('creates a playlist with a "lastUpdated" property', async () => {
+    const result = await Playlist.findById(playlist._id);
+    expect(result).to.have.property('lastUpdated');
+    expect(result.lastUpdated).to.be.a('date');
   });
 
 });

@@ -27,6 +27,12 @@ const UserSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'user'
   }],
+  friendRequestsSent: [{
+    type: Schema.Types.ObjectId,
+    ref: 'user',
+  }],
+  lastLogin: Date,
+  pushToken: String,
 });
 
 UserSchema.plugin(findOrCreate);
