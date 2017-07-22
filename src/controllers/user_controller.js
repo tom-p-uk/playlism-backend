@@ -4,6 +4,7 @@ import tokenForUser from '../utils/token';
 import mongoose from 'mongoose';
 import Expo from 'exponent-server-sdk';
 import _ from 'lodash';
+import sendPushNotifications from '../services/send_push_notifications';
 
 // Fetch user data for users already signed in
 export const fetchUser = async (req, res) => {
@@ -92,7 +93,12 @@ export const addFriend = async (req, res) => {
   try {
     await sendingUser.save();
     await receivingUser.save();
+
     res.status(200).send({ success: { users: [sendingUser, receivingUser] } });
+
+    if (receivingUser.pushToken) {
+      sendPushNotifications(receivingUser.pushToken, `${sendingUser.displayName} sent you a friend request on Playlism.`)
+    }
   } catch (err) {
     console.log(err);
     res.status(500).send({ error: 'User could not be updated.' });
