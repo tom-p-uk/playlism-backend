@@ -22,10 +22,6 @@ var _passportGoogleOauth2 = _interopRequireDefault(_passportGoogleOauth);
 
 var _passportJwt = require('passport-jwt');
 
-var _passportLocal = require('passport-local');
-
-var _passportLocal2 = _interopRequireDefault(_passportLocal);
-
 var _User = require('../models/User');
 
 var _User2 = _interopRequireDefault(_User);
