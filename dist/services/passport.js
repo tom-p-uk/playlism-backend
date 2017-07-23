@@ -12,10 +12,6 @@ var _passport = require('passport');
 
 var _passport2 = _interopRequireDefault(_passport);
 
-var _passportFacebookToken = require('passport-facebook-token');
-
-var _passportFacebookToken2 = _interopRequireDefault(_passportFacebookToken);
-
 var _passportFacebook = require('passport-facebook');
 
 var _passportFacebook2 = _interopRequireDefault(_passportFacebook);

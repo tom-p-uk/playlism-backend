@@ -1,5 +1,4 @@
 import passport from 'passport';
-import FacebookTokenStrategy from 'passport-facebook-token';
 import FacebookStrategy from 'passport-facebook';
 import GoogleStrategy from 'passport-google-oauth20';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
