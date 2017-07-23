@@ -2,7 +2,6 @@ import passport from 'passport';
 import FacebookStrategy from 'passport-facebook';
 import GoogleStrategy from 'passport-google-oauth20';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
-import LocalStrategy from 'passport-local';
 import User from '../models/User';
 
 const facebookOptions = {
