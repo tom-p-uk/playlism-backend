@@ -64,7 +64,7 @@ app.use(_passport2.default.session());
 
 (0, _routes2.default)(app);
 
-var port = 3000 || process.env.PORT;
+var port = process.env.PORT || 3000;
 app.listen(port, function () {
   return console.log('Listening on port ' + port);
 });
