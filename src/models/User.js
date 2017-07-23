@@ -1,5 +1,4 @@
 import mongoose, { Schema } from 'mongoose';
-import bcrypt from 'bcrypt-nodejs';
 import findOrCreate from 'findorcreate-promise';
 
 mongoose.Promise = global.Promise;

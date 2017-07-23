@@ -8,10 +8,6 @@ var _mongoose = require('mongoose');
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _bcryptNodejs = require('bcrypt-nodejs');
-
-var _bcryptNodejs2 = _interopRequireDefault(_bcryptNodejs);
-
 var _findorcreatePromise = require('findorcreate-promise');
 
 var _findorcreatePromise2 = _interopRequireDefault(_findorcreatePromise);
@@ -54,7 +50,7 @@ var UserSchema = new _mongoose.Schema({
 UserSchema.plugin(_findorcreatePromise2.default);
 
 UserSchema.methods.comparePassword = function (candidatePassword, callback) {
-  _bcryptNodejs2.default.compare(candidatePassword, this.local.password, function (err, isMatch) {
+  bcrypt.compare(candidatePassword, this.local.password, function (err, isMatch) {
     if (err) return callback(err);
 
     callback(null, isMatch);
