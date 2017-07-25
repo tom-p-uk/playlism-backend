@@ -217,10 +217,14 @@ export const getFriendRequestsList = async (req, res) => {
 export const searchUsers = async (req, res) => {
   const displayNameLower = decodeURI(req.params.searchTerm).toLowerCase();
 
-  const users = await User.find({ 'displayNameLower':
-    { $regex: new RegExp('^' + displayNameLower, 'i') }
-  });
+  try {
+    const users = await User.find({ 'displayNameLower':
+      { $regex: new RegExp('^' + displayNameLower, 'i') }
+    });
 
-  console.log(users);
-  res.status(200).send({ success: { users } });
+    res.status(200).send({ success: { users } });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ error: 'Search results could not be returned.' });
+  }
 };

@@ -568,23 +568,32 @@ var searchUsers = exports.searchUsers = function () {
         switch (_context10.prev = _context10.next) {
           case 0:
             displayNameLower = decodeURI(req.params.searchTerm).toLowerCase();
-            _context10.next = 3;
+            _context10.prev = 1;
+            _context10.next = 4;
             return _User2.default.find({ 'displayNameLower': { $regex: new RegExp('^' + displayNameLower, 'i') }
             });
 
-          case 3:
+          case 4:
             users = _context10.sent;
 
 
-            console.log(users);
             res.status(200).send({ success: { users: users } });
+            _context10.next = 12;
+            break;
 
-          case 6:
+          case 8:
+            _context10.prev = 8;
+            _context10.t0 = _context10['catch'](1);
+
+            console.log(_context10.t0);
+            res.status(500).send({ error: 'Search results could not be returned.' });
+
+          case 12:
           case 'end':
             return _context10.stop();
         }
       }
-    }, _callee10, undefined);
+    }, _callee10, undefined, [[1, 8]]);
   }));
 
   return function searchUsers(_x19, _x20) {
