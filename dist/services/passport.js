@@ -62,7 +62,8 @@ var facebookLogin = new _passportFacebook2.default(facebookOptions, function () 
               facebookId: id,
               firstName: first_name,
               lastName: last_name,
-              profileImg: encodeURIComponent(profile.photos[0].value)
+              profileImg: encodeURIComponent(profile.photos[0].value),
+              displayNameLower: (first_name + ' ' + last_name).toLowerCase()
             });
 
           case 4:
@@ -108,7 +109,8 @@ var googleLogin = new _passportGoogleOauth2.default(googleOptions, function () {
               googleId: id,
               firstName: name.givenName,
               lastName: name.familyName,
-              profileImg: encodeURIComponent(image.url)
+              profileImg: encodeURIComponent(image.url),
+              displayNameLower: displayName.toLowerCase()
             });
 
           case 4:

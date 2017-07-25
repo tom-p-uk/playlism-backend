@@ -44,18 +44,11 @@ var UserSchema = new _mongoose.Schema({
     ref: 'user'
   }],
   lastLogin: Date,
-  pushToken: String
+  pushToken: String,
+  displayNameLower: String
 });
 
 UserSchema.plugin(_findorcreatePromise2.default);
-
-UserSchema.methods.comparePassword = function (candidatePassword, callback) {
-  bcrypt.compare(candidatePassword, this.local.password, function (err, isMatch) {
-    if (err) return callback(err);
-
-    callback(null, isMatch);
-  });
-};
 
 var User = _mongoose2.default.model('user', UserSchema);
 

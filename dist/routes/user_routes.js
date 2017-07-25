@@ -26,5 +26,8 @@ router.put('/pushtoken', _require_auth2.default, _user_controller.addPushToken);
 router.put('/friend/add', _require_auth2.default, _user_controller.addFriend);
 router.put('/friend/delete', _require_auth2.default, _user_controller.deleteFriend);
 router.put('/friend/acceptreject', _require_auth2.default, _user_controller.acceptRejectFriendRequest);
+router.get('/friends', _require_auth2.default, _user_controller.getFriendsList);
+router.get('/friendrequests', _require_auth2.default, _user_controller.getFriendRequestsList);
+router.get('/search/:searchTerm', _require_auth2.default, _user_controller.searchUsers);
 
 exports.default = router;
