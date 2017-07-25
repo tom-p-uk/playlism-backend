@@ -22,7 +22,11 @@ export const fetchUser = async (req, res) => {
 export const editDisplayName = async (req, res) => {
   const { displayName } = req.body;
   try {
-    await User.findByIdAndUpdate(req.user._id, { displayName }, { runValidators: true });
+    await User.findByIdAndUpdate(req.user._id, {
+      displayName,
+      displayNameLower: displayName.toLowerCase()
+    }, { runValidators: true });
+
     res.status(200).send({ success: { displayName }});
   } catch (err) {
     console.log(err);
@@ -74,17 +78,17 @@ export const addFriend = async (req, res) => {
   let { friendRequestsSent } = sendingUser;
   let { friendRequests } = receivingUser;
 
-  // Convert to array of strings for comparison
-  friendRequestsSent = friendRequestsSent.map(id => id.toString());
-  friendRequests = friendRequests.map(id => id.toString());
+  // Ensure that users don't exist in the friendRequestsSent / friendRequests
+  // arrays and send an error message if so
+  const receivingUserIndex = friendRequestsSent.indexOf(receivingUser._id);
+  const sendingUserIndex = friendRequests.indexOf(sendingUser._id);
 
-  // Add stingified ObjectIds to arrays, and ensure arrays are stripped of any duplicate entries
-  friendRequestsSent = _.uniq([...friendRequestsSent, receivingUser._id.toString()]);
-  friendRequests = _.uniq([...friendRequests, sendingUser._id.toString()]);
+  if (receivingUserIndex !== -1 || sendingUserIndex !== -1) {
+    return res.status(422).send({ error: 'You have already sent a friend request to this user.' });
+  }
 
-  // Convert back to ObjectIds
-  friendRequestsSent = friendRequestsSent.map(id => mongoose.Types.ObjectId(id));
-  friendRequests = friendRequests.map(id => mongoose.Types.ObjectId(id));
+  friendRequestsSent.push(receivingUser);
+  friendRequests.push(sendingUser);
 
   sendingUser.friendRequestsSent = friendRequestsSent;
   receivingUser.friendRequests = friendRequests;
@@ -94,7 +98,7 @@ export const addFriend = async (req, res) => {
     await sendingUser.save();
     await receivingUser.save();
 
-    res.status(200).send({ success: { users: [sendingUser, receivingUser] } });
+    res.status(200).send({ success: { user: receivingUser } });
 
     if (receivingUser.pushToken) {
       sendPushNotifications(receivingUser.pushToken, `${sendingUser.displayName} sent you a friend request on Playlism.`)
@@ -140,7 +144,8 @@ export const acceptRejectFriendRequest = async (req, res) => {
   try {
     await receivingUser.save();
     await sendingUser.save();
-    res.status(200).send({ success: 'Friend added.' });
+
+    accept ? res.status(200).send({ success: { user: sendingUser } }) : res.status(200).send({ success: 'Request rejected.' });
   } catch (err) {
     console.log(err);
     res.status(500).send({ error: 'Could not accept friend request.' });
@@ -172,9 +177,50 @@ export const deleteFriend = async (req, res) => {
     await deletingUser.save();
     await deletedUser.save();
 
-    res.status(200).send({ success: 'User deleted.' });
+    res.status(200).send({ success: { friends: deletingUser.friends } });
   } catch (err) {
     console.log(err);
     res.status(500).send({ error: 'User could not be unfriended.' })
   }
+};
+
+export const getFriendsList = async(req, res) => {
+  let { user } = req;
+
+  try {
+    user = await User.findById(user._id).populate('friends');
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send({ error: 'Could not retrieve friends list.' });
+  }
+
+  const { friends } = user;
+  res.status(200).send({ success: { friends }});
+};
+
+export const getFriendRequestsList = async (req, res) => {
+  let { user } = req;
+  console.log(user);
+  try {
+    user = await User.findById(user._id).populate('friendRequests');
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send({ error: 'Could not retrieve friend requests list.' });
+  }
+
+  const { friendRequests } = user;
+  res.status(200).send({
+    success: { friendRequests }
+  });
+};
+
+export const searchUsers = async (req, res) => {
+  const displayNameLower = decodeURI(req.params.searchTerm).toLowerCase();
+
+  const users = await User.find({ 'displayNameLower':
+    { $regex: new RegExp('^' + displayNameLower, 'i') }
+  });
+
+  console.log(users);
+  res.status(200).send({ success: { users } });
 };

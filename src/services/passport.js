@@ -31,6 +31,7 @@ const facebookLogin = new FacebookStrategy(facebookOptions, async (accessToken, 
       firstName: first_name,
       lastName: last_name,
       profileImg: encodeURIComponent(profile.photos[0].value),
+      displayNameLower: `${first_name} ${last_name}`.toLowerCase(),
     });
 
     done(null, user.result);
@@ -48,6 +49,7 @@ const googleLogin = new GoogleStrategy(googleOptions, async (accessToken, refres
       firstName: name.givenName,
       lastName: name.familyName,
       profileImg: encodeURIComponent(image.url),
+      displayNameLower: displayName.toLowerCase(),
     });
 
     done(null, user.result);

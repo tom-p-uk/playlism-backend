@@ -32,17 +32,10 @@ const UserSchema = new Schema({
   }],
   lastLogin: Date,
   pushToken: String,
+  displayNameLower: String,
 });
 
 UserSchema.plugin(findOrCreate);
-
-UserSchema.methods.comparePassword = function(candidatePassword, callback) {
-  bcrypt.compare(candidatePassword, this.local.password, (err, isMatch) => {
-    if (err) return callback(err);
-
-    callback(null, isMatch);
-  });
-};
 
 const User = mongoose.model('user', UserSchema);
 

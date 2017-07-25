@@ -8,6 +8,9 @@ import {
   addFriend,
   deleteFriend,
   acceptRejectFriendRequest,
+  getFriendsList,
+  getFriendRequestsList,
+  searchUsers,
 } from '../controllers/user_controller';
 
 const router = express.Router();
@@ -20,5 +23,8 @@ router.put('/pushtoken', requireAuth, addPushToken);
 router.put('/friend/add', requireAuth, addFriend);
 router.put('/friend/delete', requireAuth, deleteFriend);
 router.put('/friend/acceptreject', requireAuth, acceptRejectFriendRequest);
+router.get('/friends', requireAuth, getFriendsList);
+router.get('/friendrequests', requireAuth, getFriendRequestsList);
+router.get('/search/:searchTerm', requireAuth, searchUsers);
 
 export default router;
