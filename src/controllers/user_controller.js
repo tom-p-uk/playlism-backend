@@ -215,12 +215,16 @@ export const getFriendRequestsList = async (req, res) => {
 };
 
 export const searchUsers = async (req, res) => {
-  const displayNameLower = decodeURI(req.params.searchTerm).toLowerCase();
+  const { user } = req;
+  const displayNameLower = decodeURIComponent(req.params.searchTerm).toLowerCase();
 
   try {
-    const users = await User.find({ 'displayNameLower':
+    let users = await User.find({ 'displayNameLower':
       { $regex: new RegExp('^' + displayNameLower, 'i') }
     });
+
+    // Filter searching user from the array
+    users = users.filter(userObj => !userObj._id.equals(user._id));
 
     res.status(200).send({ success: { users } });
   } catch (err) {

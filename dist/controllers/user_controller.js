@@ -562,38 +562,44 @@ var getFriendRequestsList = exports.getFriendRequestsList = function () {
 
 var searchUsers = exports.searchUsers = function () {
   var _ref10 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee10(req, res) {
-    var displayNameLower, users;
+    var user, displayNameLower, users;
     return _regenerator2.default.wrap(function _callee10$(_context10) {
       while (1) {
         switch (_context10.prev = _context10.next) {
           case 0:
-            displayNameLower = decodeURI(req.params.searchTerm).toLowerCase();
-            _context10.prev = 1;
-            _context10.next = 4;
+            user = req.user;
+            displayNameLower = decodeURIComponent(req.params.searchTerm).toLowerCase();
+            _context10.prev = 2;
+            _context10.next = 5;
             return _User2.default.find({ 'displayNameLower': { $regex: new RegExp('^' + displayNameLower, 'i') }
             });
 
-          case 4:
+          case 5:
             users = _context10.sent;
 
 
+            // Filter searching user from the array
+            users = users.filter(function (userObj) {
+              return !userObj._id.equals(user._id);
+            });
+
             res.status(200).send({ success: { users: users } });
-            _context10.next = 12;
+            _context10.next = 14;
             break;
 
-          case 8:
-            _context10.prev = 8;
-            _context10.t0 = _context10['catch'](1);
+          case 10:
+            _context10.prev = 10;
+            _context10.t0 = _context10['catch'](2);
 
             console.log(_context10.t0);
             res.status(500).send({ error: 'Search results could not be returned.' });
 
-          case 12:
+          case 14:
           case 'end':
             return _context10.stop();
         }
       }
-    }, _callee10, undefined, [[1, 8]]);
+    }, _callee10, undefined, [[2, 10]]);
   }));
 
   return function searchUsers(_x19, _x20) {
