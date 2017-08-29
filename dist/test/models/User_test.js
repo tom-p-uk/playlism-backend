@@ -71,39 +71,49 @@ describe('User', function () {
     }, _callee2, undefined);
   })));
 
-  it('shows a list of users in the "friends" and friendRequests" fields', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee3() {
-    var friend1, friend2, result;
+  it('creates a new user with all the required fields', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee3() {
+    var user2, result;
     return _regenerator2.default.wrap(function _callee3$(_context3) {
       while (1) {
         switch (_context3.prev = _context3.next) {
           case 0:
-            friend1 = new _User2.default({ displayName: 'Friend1' });
-            friend2 = new _User2.default({ displayName: 'Friend2' });
-            _context3.next = 4;
-            return friend1.save();
+            user2 = new _User2.default({
+              firstName: 'a',
+              lastName: 'a',
+              displayName: 'abcd',
+              googleId: 'a',
+              facebookId: 'a',
+              profileImg: 'a',
+              friends: [{
+                friendsSince: Date.now(),
+                user: user._id
+              }],
+              friendRequests: [],
+              friendRequestsSent: [],
+              lastLogin: Date.now(),
+              pushToken: 'a',
+              displayNameLower: 'a'
+            });
+            _context3.next = 3;
+            return user2.save();
 
-          case 4:
-            _context3.next = 6;
-            return friend2.save();
-
-          case 6:
-
-            user.friends.push(friend1);
-            user.friendRequests.push(friend2);
-            _context3.next = 10;
-            return user.save();
-
-          case 10:
-            _context3.next = 12;
-            return _User2.default.findById(user._id).populate('friends').populate('friendRequests');
-
-          case 12:
+          case 3:
             result = _context3.sent;
 
-            (0, _chai.expect)(result.friends[0]._id).to.eql(friend1._id);
-            (0, _chai.expect)(result.friendRequests[0]._id).to.eql(friend2._id);
+            (0, _chai.expect)(result).to.have.property('firstName');
+            (0, _chai.expect)(result).to.have.property('lastName');
+            (0, _chai.expect)(result).to.have.property('displayName');
+            (0, _chai.expect)(result).to.have.property('googleId');
+            (0, _chai.expect)(result).to.have.property('facebookId');
+            (0, _chai.expect)(result).to.have.property('profileImg');
+            (0, _chai.expect)(result).to.have.property('friends');
+            (0, _chai.expect)(result).to.have.property('friendRequests');
+            (0, _chai.expect)(result).to.have.property('friendRequestsSent');
+            (0, _chai.expect)(result).to.have.property('lastLogin');
+            (0, _chai.expect)(result).to.have.property('pushToken');
+            (0, _chai.expect)(result).to.have.property('displayNameLower');
 
-          case 15:
+          case 16:
           case 'end':
             return _context3.stop();
         }
@@ -111,26 +121,70 @@ describe('User', function () {
     }, _callee3, undefined);
   })));
 
-  it('adds a date to the "dateJoined" field', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee4() {
-    var result;
+  it('shows a list of users in the "friends", "friendRequests" and "friendRequestsSent" fields', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee4() {
+    var friend1, friend2, friend3, result;
     return _regenerator2.default.wrap(function _callee4$(_context4) {
       while (1) {
         switch (_context4.prev = _context4.next) {
           case 0:
-            _context4.next = 2;
+            friend1 = new _User2.default({ displayName: 'Friend1' });
+            friend2 = new _User2.default({ displayName: 'Friend2' });
+            friend3 = new _User2.default({ displayName: 'Friend3' });
+            _context4.next = 5;
+            return friend1.save();
+
+          case 5:
+            _context4.next = 7;
+            return friend2.save();
+
+          case 7:
+
+            user.friends.push({ user: friend1, friendsSince: Date.now() });
+            user.friendRequests.push({ user: friend2, dateReceived: Date.now() });
+            user.friendRequestsSent.push({ user: friend3, dateSent: Date.now() });
+            _context4.next = 12;
+            return user.save();
+
+          case 12:
+            _context4.next = 14;
+            return _User2.default.findById(user._id).populate('friends').populate('friendRequests').populate('friendRequestsSent');
+
+          case 14:
+            result = _context4.sent;
+
+
+            (0, _chai.expect)(result.friends[0].user).to.eql(friend1._id);
+            (0, _chai.expect)(result.friendRequests[0].user).to.eql(friend2._id);
+            (0, _chai.expect)(result.friendRequestsSent[0].user).to.eql(friend3._id);
+
+          case 18:
+          case 'end':
+            return _context4.stop();
+        }
+      }
+    }, _callee4, undefined);
+  })));
+
+  it('adds a date to the "dateJoined" field', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee5() {
+    var result;
+    return _regenerator2.default.wrap(function _callee5$(_context5) {
+      while (1) {
+        switch (_context5.prev = _context5.next) {
+          case 0:
+            _context5.next = 2;
             return _User2.default.findById(user._id);
 
           case 2:
-            result = _context4.sent;
+            result = _context5.sent;
 
             (0, _chai.expect)(result).to.have.property('dateJoined');
             (0, _chai.expect)(result.dateJoined).to.be.a('date');
 
           case 5:
           case 'end':
-            return _context4.stop();
+            return _context5.stop();
         }
       }
-    }, _callee4, undefined);
+    }, _callee5, undefined);
   })));
 });

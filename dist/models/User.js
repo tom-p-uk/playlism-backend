@@ -8,10 +8,6 @@ var _mongoose = require('mongoose');
 
 var _mongoose2 = _interopRequireDefault(_mongoose);
 
-var _findorcreatePromise = require('findorcreate-promise');
-
-var _findorcreatePromise2 = _interopRequireDefault(_findorcreatePromise);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 _mongoose2.default.Promise = global.Promise;
@@ -27,28 +23,38 @@ var UserSchema = new _mongoose.Schema({
   googleId: String,
   facebookId: String,
   profileImg: String,
-  dateJoined: {
+  friends: [{
+    friendsSince: Date,
+    user: {
+      type: _mongoose.Schema.Types.ObjectId,
+      ref: 'user'
+    }
+  }],
+  friendRequests: [{
+    dateReceived: Date,
+    user: {
+      type: _mongoose.Schema.Types.ObjectId,
+      ref: 'user'
+    }
+  }],
+  friendRequestsSent: [{
+    dateSent: Date,
+    user: {
+      type: _mongoose.Schema.Types.ObjectId,
+      ref: 'user'
+    }
+  }],
+  lastLogin: {
     type: Date,
     default: Date.now()
   },
-  friends: [{
-    type: _mongoose.Schema.Types.ObjectId,
-    ref: 'user'
-  }],
-  friendRequests: [{
-    type: _mongoose.Schema.Types.ObjectId,
-    ref: 'user'
-  }],
-  friendRequestsSent: [{
-    type: _mongoose.Schema.Types.ObjectId,
-    ref: 'user'
-  }],
-  lastLogin: Date,
   pushToken: String,
   displayNameLower: String
+}, {
+  timestamps: {
+    createdAt: 'dateJoined'
+  }
 });
-
-UserSchema.plugin(_findorcreatePromise2.default);
 
 var User = _mongoose2.default.model('user', UserSchema);
 

@@ -221,7 +221,7 @@ describe('playlistController', function () {
 
               (0, _chai.expect)(res.status).to.equal(422);
               (0, _chai.expect)(res.body.error).to.exist;
-              (0, _chai.expect)(res.body.error).to.equal('Playlist title must no more than 50 characters long.');
+              (0, _chai.expect)(res.body.error).to.equal('Playlist title must be no more than 30 characters long.');
               (0, _chai.expect)(foundPlaylist).to.equal(null);
 
             case 10:
@@ -951,7 +951,7 @@ describe('playlistController', function () {
           switch (_context31.prev = _context31.next) {
             case 0:
               _context31.next = 2;
-              return (0, _supertest2.default)(_app2.default).get('/api/playlist/foruser/' + user1._id);
+              return (0, _supertest2.default)(_app2.default).get('/api/playlist/foruser/');
 
             case 2:
               res = _context31.sent;
@@ -975,7 +975,7 @@ describe('playlistController', function () {
           switch (_context32.prev = _context32.next) {
             case 0:
               _context32.next = 2;
-              return (0, _supertest2.default)(_app2.default).get('/api/playlist/foruser/' + user1._id).set('authorization', user1Token);
+              return (0, _supertest2.default)(_app2.default).get('/api/playlist/foruser/').set('authorization', user1Token);
 
             case 2:
               res = _context32.sent;
@@ -1054,7 +1054,7 @@ describe('playlistController', function () {
           switch (_context34.prev = _context34.next) {
             case 0:
               _context34.next = 2;
-              return (0, _supertest2.default)(_app2.default).get('/api/playlist/foruser/' + user1._id);
+              return (0, _supertest2.default)(_app2.default).get('/api/playlist/byuser');
 
             case 2:
               res = _context34.sent;
@@ -1078,7 +1078,7 @@ describe('playlistController', function () {
           switch (_context35.prev = _context35.next) {
             case 0:
               _context35.next = 2;
-              return (0, _supertest2.default)(_app2.default).get('/api/playlist/byuser/' + user1._id).set('authorization', user1Token);
+              return (0, _supertest2.default)(_app2.default).get('/api/playlist/byuser').set('authorization', user1Token);
 
             case 2:
               res = _context35.sent;

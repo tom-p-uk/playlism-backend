@@ -206,6 +206,7 @@ describe('userController', () => {
     it('can only be accessed by passing a valid JWT', async () => {
       const res = await request(app)
         .put('/api/user/friend/add');
+
       expect(res.status).to.equal(401);
       expect(res.text).to.equal('Unauthorized');
     });
@@ -239,7 +240,7 @@ describe('userController', () => {
       expect(res.status).to.equal(200);
       expect(res.body.success).to.exist;
       expect(foundUser.friendRequests.length).to.equal(1);
-      expect(foundUser.friendRequests.indexOf(user1._id)).to.not.equal(-1);
+      expect(_.findIndex(foundUser.friendRequests, { user: user1._id })).to.not.equal(-1);
     });
 
     it("adds the receiving user to the sending user's 'friendRequestsSent' array", async () => {
@@ -253,25 +254,25 @@ describe('userController', () => {
       expect(res.status).to.equal(200);
       expect(res.body.success).to.exist;
       expect(foundUser.friendRequestsSent.length).to.equal(1);
-      expect(foundUser.friendRequestsSent.indexOf(user2._id)).to.not.equal(-1);
+      expect(_.findIndex(foundUser.friendRequestsSent, { user: user2._id })).to.not.equal(-1);
     });
 
-    it('sends back the user that receives the request as a response', async () => {
+    it("sends back an updated list of the user's friend requests sent as a response", async () => {
       const res = await request(app)
         .put('/api/user/friend/add')
         .send({ userId: user2._id })
         .set('authorization', user1Token);
 
-      const foundUser = await User.findById(user2._id);
-
+      const index = _.findIndex(res.body.success.friendRequestsSent, friendRequest => friendRequest.user === user2._id.toString());
       expect(res.status).to.equal(200);
       expect(res.body.success).to.exist;
-      expect(res.body.success.user._id).to.equal(user2._id.toString());
+      expect(res.body.success.friendRequestsSent).to.exist;
+      expect(index).to.not.equal(-1);
     });
 
     it('prevents duplicate requests being sent', async () => {
-      user1.friendRequestsSent = [user2];
-      user2.friendRequests = [user1];
+      user1.friendRequestsSent = [{ user: user2, dateSent: Date.now() }];
+      user2.friendRequests = [{ user: user1, dateReceived: Date.now() }];
 
       await user1.save();
       await user2.save();
@@ -304,10 +305,10 @@ describe('userController', () => {
         firstName: 'Test',
         lastName: 'User',
         displayName: 'Test User2',
-        friendRequests: [user1],
+        friendRequests: [{ user: user1._id, dateReceived: Date.now() }],
       });
 
-      user1.friendRequestsSent = [user2];
+      user1.friendRequestsSent = [{ user: user2._id, dateSent: Date.now() }];
       user2Token = tokenForUser(user2);
 
       await user1.save();
@@ -354,7 +355,7 @@ describe('userController', () => {
 
     it("removes the sending user from the receiving user's 'friendRequests' array", async () => {
       const user3 = new User();
-      user2.friendRequests.push(user3);
+      user2.friendRequests.push({ user: user3, dateReceived: Date.now() });
       await user2.save();
 
       const res = await request(app)
@@ -367,7 +368,7 @@ describe('userController', () => {
       expect(res.status).to.equal(200);
       expect(res.body.success).to.exist;
       expect(foundUser.friendRequests.length).to.equal(1);
-      expect(foundUser.friendRequests.indexOf(user1._id)).to.equal(-1);
+      expect(_.findIndex(foundUser.friendRequests, { user: user1._id })).to.equal(-1);
     });
 
     it("removes the receiving user from the sending user's 'friendRequestsSent' array", async () => {
@@ -381,7 +382,7 @@ describe('userController', () => {
       expect(res.status).to.equal(200);
       expect(res.body.success).to.exist;
       expect(foundUser.friendRequestsSent.length).to.equal(0);
-      expect(foundUser.friendRequestsSent.indexOf(user2._id)).to.equal(-1);
+      expect(_.findIndex(foundUser.friendRequestsSent, { user: user2._id })).to.equal(-1);
     });
 
     it("adds the sending user to the receiving user's 'friends' array if { accept: true } is sent", async () => {
@@ -395,7 +396,7 @@ describe('userController', () => {
       expect(res.status).to.equal(200);
       expect(res.body.success).to.exist;
       expect(foundUser.friends.length).to.equal(1);
-      expect(foundUser.friends.indexOf(user1._id)).to.not.equal(-1);
+      expect(_.findIndex(foundUser.friends, { user: user1._id })).to.not.equal(-1);
     });
 
     it("adds the receiving user to the sending user's 'friends' array if { accept: true } is sent", async () => {
@@ -409,7 +410,7 @@ describe('userController', () => {
       expect(res.status).to.equal(200);
       expect(res.body.success).to.exist;
       expect(foundUser.friends.length).to.equal(1);
-      expect(foundUser.friends.indexOf(user2._id)).to.not.equal(-1);
+      expect(_.findIndex(foundUser.friends, { user: user2._id })).to.not.equal(-1);
     });
 
     it("adds the sending user to the receiving user's 'friends' array if { accept: true } is not sent", async () => {
@@ -423,7 +424,7 @@ describe('userController', () => {
       expect(res.status).to.equal(200);
       expect(res.body.success).to.exist;
       expect(foundUser.friends.length).to.equal(0);
-      expect(foundUser.friends.indexOf(user1._id)).to.equal(-1);
+      expect(_.findIndex(foundUser.friends, { user: user1._id })).to.equal(-1);
     });
 
     it("adds the receiving user to the sending user's 'friends' array if { accept: true } is sent", async () => {
@@ -437,7 +438,7 @@ describe('userController', () => {
       expect(res.status).to.equal(200);
       expect(res.body.success).to.exist;
       expect(foundUser.friends.length).to.equal(0);
-      expect(foundUser.friends.indexOf(user2._id)).to.equal(-1);
+      expect(_.findIndex(foundUser.friends, { user: user2._id })).to.equal(-1);
     });
   });
 
@@ -455,10 +456,17 @@ describe('userController', () => {
         firstName: 'Test',
         lastName: 'User',
         displayName: 'Test User2',
-        friends: [user1, user3]
+        friends: [
+          { user: user1._id, friendsSince: Date.now() },
+          { user: user3._id, friendsSince: Date.now() },
+        ]
       });
 
-      user1.friends = [user2, user3];
+      user1.friends = [
+        { user: user2._id, friendsSince: Date.now() },
+        { user: user3._id, friendsSince: Date.now() }
+      ];
+
       await user1.save();
       await user2.save();
     });
@@ -513,9 +521,9 @@ describe('userController', () => {
       expect(res.status).to.equal(200);
       expect(res.body.success).to.exist;
       expect(foundUser1.friends.length).to.equal(1);
-      expect(foundUser1.friends.indexOf(user2._id)).to.equal(-1);
+      expect(_.findIndex(foundUser1.friends, { user: user2._id })).to.equal(-1);
       expect(foundUser2.friends.length).to.equal(1);
-      expect(foundUser2.friends.indexOf(user1._id)).to.equal(-1);
+      expect(_.findIndex(foundUser2.friends, { user: user1._id })).to.equal(-1);
     });
   });
 
@@ -604,8 +612,9 @@ describe('userController', () => {
   /*****************************************************************************
   ******************************** .searchUsers ********************************
   *****************************************************************************/
-  describe.only('.searchUsers', () => {
+  describe('.searchUsers', () => {
     let user2;
+    let user3;
     let user2Token;
 
     beforeEach(async () => {
@@ -616,7 +625,15 @@ describe('userController', () => {
         displayNameLower: 'test user2',
       });
 
+      user3 = new User({
+        firstName: 'Test',
+        lastName: 'User',
+        displayName: 'Test User3',
+        displayNameLower: 'test user3',
+      });
+
       await user2.save();
+      await user3.save();
     });
 
     it('can only be accessed by passing a valid JWT', async () => {
@@ -638,26 +655,38 @@ describe('userController', () => {
 
     it('returns a user if any matches are found', async () => {
       const res = await request(app)
+        .get(`/api/user/search/${encodeURI('Test User2')}`)
+        .set('authorization', user1Token);
+
+      expect(res.status).to.equal(200);
+      expect(res.body.success).to.exist;
+      expect(res.body.success.users).to.be.an('array');
+      expect(res.body.success.users.length).to.equal(1);
+      expect(_.findIndex(res.body.success.users, { '_id': user2._id.toString() })).to.not.equal(-1);
+    });
+
+    it('returns case insensitive search results', async () => {
+      const res = await request(app)
+        .get(`/api/user/search/${encodeURI('test user2')}`)
+        .set('authorization', user1Token);
+
+      expect(res.status).to.equal(200);
+      expect(res.body.success).to.exist;
+      expect(res.body.success.users).to.be.an('array');
+      expect(res.body.success.users.length).to.equal(1);
+      expect(_.findIndex(res.body.success.users, { '_id': user2._id.toString() })).to.not.equal(-1);
+    });
+
+    it('excludes the searching user from the search results', async () => {
+      const res = await request(app)
         .get(`/api/user/search/${encodeURI('Test User1')}`)
         .set('authorization', user1Token);
 
       expect(res.status).to.equal(200);
       expect(res.body.success).to.exist;
       expect(res.body.success.users).to.be.an('array');
-      expect(res.body.success.users.length).to.equal(1);
-      expect(_.findIndex(res.body.success.users, { '_id': user1._id.toString() })).to.not.equal(-1);
-    });
-
-    it('returns case insensitive search results', async () => {
-      const res = await request(app)
-        .get(`/api/user/search/${encodeURI('test user1')}`)
-        .set('authorization', user1Token);
-
-      expect(res.status).to.equal(200);
-      expect(res.body.success).to.exist;
-      expect(res.body.success.users).to.be.an('array');
-      expect(res.body.success.users.length).to.equal(1);
-      expect(_.findIndex(res.body.success.users, { '_id': user1._id.toString() })).to.not.equal(-1);
+      expect(res.body.success.users.length).to.equal(0);
+      expect(_.findIndex(res.body.success.users, { '_id': user1._id.toString() })).to.equal(-1);
     });
 
     it('returns search results for partial display name matches', async () => {
@@ -669,8 +698,9 @@ describe('userController', () => {
       expect(res.body.success).to.exist;
       expect(res.body.success.users).to.be.an('array');
       expect(res.body.success.users.length).to.equal(2);
-      expect(_.findIndex(res.body.success.users, { '_id': user1._id.toString() })).to.not.equal(-1);
+      expect(_.findIndex(res.body.success.users, { '_id': user1._id.toString() })).to.equal(-1);
       expect(_.findIndex(res.body.success.users, { '_id': user2._id.toString() })).to.not.equal(-1);
+      expect(_.findIndex(res.body.success.users, { '_id': user3._id.toString() })).to.not.equal(-1);
     });
   });
 });

@@ -217,7 +217,7 @@ var addPushToken = exports.addPushToken = function () {
 
 var addFriend = exports.addFriend = function () {
   var _ref5 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee5(req, res) {
-    var userId, sendingUser, receivingUser, friendRequestsSent, friendRequests, receivingUserIndex, sendingUserIndex;
+    var userId, sendingUser, receivingUser, friendRequestsSent, friendRequests, receivingUserIndex, sendingUserIndex, sentRequest, receivedRequest;
     return _regenerator2.default.wrap(function _callee5$(_context5) {
       while (1) {
         switch (_context5.prev = _context5.next) {
@@ -238,62 +238,77 @@ var addFriend = exports.addFriend = function () {
 
           case 6:
             receivingUser = _context5.sent;
+
+            if (receivingUser) {
+              _context5.next = 9;
+              break;
+            }
+
+            return _context5.abrupt('return', res.status(422).send({ error: 'User not found.' }));
+
+          case 9:
             friendRequestsSent = sendingUser.friendRequestsSent;
             friendRequests = receivingUser.friendRequests;
 
             // Ensure that users don't exist in the friendRequestsSent / friendRequests
             // arrays and send an error message if so
 
-            receivingUserIndex = friendRequestsSent.indexOf(receivingUser._id);
-            sendingUserIndex = friendRequests.indexOf(sendingUser._id);
+            receivingUserIndex = _lodash2.default.findIndex(friendRequestsSent, { user: receivingUser._id });
+            sendingUserIndex = _lodash2.default.findIndex(friendRequests, { user: sendingUser._id });
 
             if (!(receivingUserIndex !== -1 || sendingUserIndex !== -1)) {
-              _context5.next = 13;
+              _context5.next = 15;
               break;
             }
 
             return _context5.abrupt('return', res.status(422).send({ error: 'You have already sent a friend request to this user.' }));
 
-          case 13:
+          case 15:
+            sentRequest = {
+              dateSent: Date.now(),
+              user: receivingUser._id
+            };
+            receivedRequest = {
+              dateReceived: Date.now(),
+              user: sendingUser._id
+            };
 
-            friendRequestsSent.push(receivingUser);
-            friendRequests.push(sendingUser);
 
-            sendingUser.friendRequestsSent = friendRequestsSent;
-            receivingUser.friendRequests = friendRequests;
+            friendRequestsSent.push(sentRequest);
+            friendRequests.push(receivedRequest);
 
             // Save sendingUser and receivingUser
-            _context5.prev = 17;
-            _context5.next = 20;
+            _context5.prev = 19;
+            _context5.next = 22;
             return sendingUser.save();
 
-          case 20:
-            _context5.next = 22;
+          case 22:
+            _context5.next = 24;
             return receivingUser.save();
 
-          case 22:
+          case 24:
 
-            res.status(200).send({ success: { user: receivingUser } });
+            res.status(200).send({ success: { friendRequestsSent: friendRequestsSent } });
 
             if (receivingUser.pushToken) {
               (0, _send_push_notifications2.default)(receivingUser.pushToken, sendingUser.displayName + ' sent you a friend request on Playlism.');
             }
-            _context5.next = 30;
+            _context5.next = 32;
             break;
 
-          case 26:
-            _context5.prev = 26;
-            _context5.t0 = _context5['catch'](17);
+          case 28:
+            _context5.prev = 28;
+            _context5.t0 = _context5['catch'](19);
 
             console.log(_context5.t0);
             res.status(500).send({ error: 'User could not be updated.' });
 
-          case 30:
+          case 32:
           case 'end':
             return _context5.stop();
         }
       }
-    }, _callee5, undefined, [[17, 26]]);
+    }, _callee5, undefined, [[19, 28]]);
   }));
 
   return function addFriend(_x9, _x10) {
@@ -303,7 +318,7 @@ var addFriend = exports.addFriend = function () {
 
 var acceptRejectFriendRequest = exports.acceptRejectFriendRequest = function () {
   var _ref6 = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee6(req, res) {
-    var _req$body, userId, accept, receivingUser, index, sendingUser, friendRequestsSent, friendRequests;
+    var _req$body, userId, accept, receivingUser, index, sendingUser, friendRequestsSent, friendRequests, friendRequestsSentFiltered, friendRequestsFiltered, sendingUserFriend, receivingUserFriend;
 
     return _regenerator2.default.wrap(function _callee6$(_context6) {
       while (1) {
@@ -322,7 +337,7 @@ var acceptRejectFriendRequest = exports.acceptRejectFriendRequest = function () 
           case 4:
 
             // Check for presence of userId in friendRequests and send error if not found
-            index = receivingUser.friendRequests.indexOf(_mongoose2.default.Types.ObjectId(userId));
+            index = _lodash2.default.findIndex(receivingUser.friendRequests, { user: _mongoose2.default.Types.ObjectId(userId) });
 
             if (!(index === -1)) {
               _context6.next = 7;
@@ -342,48 +357,59 @@ var acceptRejectFriendRequest = exports.acceptRejectFriendRequest = function () 
 
             // Remove users from friendRequestsSent and friendRequests arrays
 
-            friendRequestsSent = friendRequestsSent.filter(function (id) {
-              return !id.equals(receivingUser._id);
+            friendRequestsSentFiltered = _lodash2.default.filter(friendRequestsSent, function (obj) {
+              return !obj.user.equals(receivingUser._id);
             });
-            friendRequests = friendRequests.filter(function (id) {
-              return !id.equals(sendingUser._id);
+            friendRequestsFiltered = _lodash2.default.filter(friendRequests, function (obj) {
+              return !obj.user.equals(sendingUser._id);
             });
 
-            sendingUser.friendRequestsSent = friendRequestsSent;
-            receivingUser.friendRequests = friendRequests;
+
+            sendingUser.friendRequestsSent = friendRequestsSentFiltered;
+            receivingUser.friendRequests = friendRequestsFiltered;
+
+            sendingUserFriend = {
+              friendsSince: Date.now(),
+              user: receivingUser._id
+            };
+            receivingUserFriend = {
+              friendsSince: Date.now(),
+              user: sendingUser._id
+            };
+
 
             if (accept) {
-              sendingUser.friends.push(receivingUser);
-              receivingUser.friends.push(sendingUser);
+              sendingUser.friends.push(sendingUserFriend);
+              receivingUser.friends.push(receivingUserFriend);
             }
-
-            _context6.prev = 17;
-            _context6.next = 20;
+            _context6.prev = 19;
+            _context6.next = 22;
             return receivingUser.save();
 
-          case 20:
-            _context6.next = 22;
+          case 22:
+            _context6.next = 24;
             return sendingUser.save();
 
-          case 22:
+          case 24:
 
-            accept ? res.status(200).send({ success: { user: sendingUser } }) : res.status(200).send({ success: 'Request rejected.' });
-            _context6.next = 29;
+            receivingUserFriend.user = sendingUser;
+            accept ? res.status(200).send({ success: { friend: receivingUserFriend } }) : res.status(200).send({ success: 'Request rejected.' });
+            _context6.next = 32;
             break;
 
-          case 25:
-            _context6.prev = 25;
-            _context6.t0 = _context6['catch'](17);
+          case 28:
+            _context6.prev = 28;
+            _context6.t0 = _context6['catch'](19);
 
             console.log(_context6.t0);
-            res.status(500).send({ error: 'Could not accept friend request.' });
+            res.status(500).send({ error: 'Could not respond to friend request.' });
 
-          case 29:
+          case 32:
           case 'end':
             return _context6.stop();
         }
       }
-    }, _callee6, undefined, [[17, 25]]);
+    }, _callee6, undefined, [[19, 28]]);
   }));
 
   return function acceptRejectFriendRequest(_x11, _x12) {
@@ -411,7 +437,8 @@ var deleteFriend = exports.deleteFriend = function () {
           case 4:
 
             // Check for presence of userId in user's 'friends' arrays, and send error if not found
-            index = deletingUser.friends.indexOf(_mongoose2.default.Types.ObjectId(userId));
+            // const index = deletingUser.friends.indexOf(mongoose.Types.ObjectId(userId));
+            index = _lodash2.default.findIndex(deletingUser.friends, { user: _mongoose2.default.Types.ObjectId(userId) });
 
             if (!(index === -1)) {
               _context7.next = 7;
@@ -429,11 +456,11 @@ var deleteFriend = exports.deleteFriend = function () {
 
 
             // Remove users from users from each other's 'friends' arrays
-            deletingUser.friends = deletingUser.friends.filter(function (id) {
-              return !id.equals(deletedUser._id);
+            deletingUser.friends = deletingUser.friends.filter(function (obj) {
+              return !obj.user.equals(deletedUser._id);
             });
-            deletedUser.friends = deletedUser.friends.filter(function (id) {
-              return !id.equals(deletingUser._id);
+            deletedUser.friends = deletedUser.friends.filter(function (obj) {
+              return !obj.user.equals(deletingUser._id);
             });
 
             _context7.prev = 12;
@@ -455,7 +482,7 @@ var deleteFriend = exports.deleteFriend = function () {
             _context7.t0 = _context7['catch'](12);
 
             console.log(_context7.t0);
-            res.status(500).send({ error: 'User could not be unfriended.' });
+            res.status(500).send({ error: 'User could not be deleted.' });
 
           case 24:
           case 'end':
@@ -481,7 +508,7 @@ var getFriendsList = exports.getFriendsList = function () {
             user = req.user;
             _context8.prev = 1;
             _context8.next = 4;
-            return _User2.default.findById(user._id).populate('friends');
+            return _User2.default.findById(user._id).populate('friends.user');
 
           case 4:
             user = _context8.sent;
@@ -522,37 +549,35 @@ var getFriendRequestsList = exports.getFriendRequestsList = function () {
         switch (_context9.prev = _context9.next) {
           case 0:
             user = req.user;
+            _context9.prev = 1;
+            _context9.next = 4;
+            return _User2.default.findById(user._id).populate('friendRequests.user');
 
-            console.log(user);
-            _context9.prev = 2;
-            _context9.next = 5;
-            return _User2.default.findById(user._id).populate('friendRequests');
-
-          case 5:
+          case 4:
             user = _context9.sent;
-            _context9.next = 12;
+            _context9.next = 11;
             break;
 
-          case 8:
-            _context9.prev = 8;
-            _context9.t0 = _context9['catch'](2);
+          case 7:
+            _context9.prev = 7;
+            _context9.t0 = _context9['catch'](1);
 
             console.log(_context9.t0);
             return _context9.abrupt('return', res.status(500).send({ error: 'Could not retrieve friend requests list.' }));
 
-          case 12:
+          case 11:
             _user2 = user, friendRequests = _user2.friendRequests;
 
             res.status(200).send({
               success: { friendRequests: friendRequests }
             });
 
-          case 14:
+          case 13:
           case 'end':
             return _context9.stop();
         }
       }
-    }, _callee9, undefined, [[2, 8]]);
+    }, _callee9, undefined, [[1, 7]]);
   }));
 
   return function getFriendRequestsList(_x17, _x18) {

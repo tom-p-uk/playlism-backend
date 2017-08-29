@@ -75,30 +75,41 @@ export const addFriend = async (req, res) => {
   const sendingUser = req.user;
   const receivingUser = await User.findById(userId);
 
+  if (!receivingUser) {
+    return res.status(422).send({ error: 'User not found.' });
+  }
+
   let { friendRequestsSent } = sendingUser;
   let { friendRequests } = receivingUser;
 
   // Ensure that users don't exist in the friendRequestsSent / friendRequests
   // arrays and send an error message if so
-  const receivingUserIndex = friendRequestsSent.indexOf(receivingUser._id);
-  const sendingUserIndex = friendRequests.indexOf(sendingUser._id);
+  const receivingUserIndex = _.findIndex(friendRequestsSent, { user: receivingUser._id });
+  const sendingUserIndex = _.findIndex(friendRequests, { user: sendingUser._id });
 
   if (receivingUserIndex !== -1 || sendingUserIndex !== -1) {
     return res.status(422).send({ error: 'You have already sent a friend request to this user.' });
   }
 
-  friendRequestsSent.push(receivingUser);
-  friendRequests.push(sendingUser);
+  const sentRequest = {
+    dateSent: Date.now(),
+    user: receivingUser._id,
+  };
 
-  sendingUser.friendRequestsSent = friendRequestsSent;
-  receivingUser.friendRequests = friendRequests;
+  const receivedRequest = {
+    dateReceived: Date.now(),
+    user: sendingUser._id,
+  };
+
+  friendRequestsSent.push(sentRequest);
+  friendRequests.push(receivedRequest);
 
   // Save sendingUser and receivingUser
   try {
     await sendingUser.save();
     await receivingUser.save();
 
-    res.status(200).send({ success: { user: receivingUser } });
+    res.status(200).send({ success: { friendRequestsSent } });
 
     if (receivingUser.pushToken) {
       sendPushNotifications(receivingUser.pushToken, `${sendingUser.displayName} sent you a friend request on Playlism.`)
@@ -118,7 +129,7 @@ export const acceptRejectFriendRequest = async (req, res) => {
   }
 
   // Check for presence of userId in friendRequests and send error if not found
-  const index = receivingUser.friendRequests.indexOf(mongoose.Types.ObjectId(userId));
+  const index = _.findIndex(receivingUser.friendRequests, { user: mongoose.Types.ObjectId(userId) });
 
   if (index === -1) {
     return res.status(422).send({ error: 'You have not received a friend request from this user.' });
@@ -130,25 +141,35 @@ export const acceptRejectFriendRequest = async (req, res) => {
   let { friendRequests } = receivingUser;
 
   // Remove users from friendRequestsSent and friendRequests arrays
-  friendRequestsSent = friendRequestsSent.filter(id => !id.equals(receivingUser._id));
-  friendRequests = friendRequests.filter(id => !id.equals(sendingUser._id));
+  const friendRequestsSentFiltered = _.filter(friendRequestsSent, obj => !obj.user.equals(receivingUser._id));
+  const friendRequestsFiltered = _.filter(friendRequests, obj => !obj.user.equals(sendingUser._id));
 
-  sendingUser.friendRequestsSent = friendRequestsSent;
-  receivingUser.friendRequests = friendRequests;
+  sendingUser.friendRequestsSent = friendRequestsSentFiltered;
+  receivingUser.friendRequests = friendRequestsFiltered;
+
+  const sendingUserFriend = {
+    friendsSince: Date.now(),
+    user: receivingUser._id,
+  };
+
+  const receivingUserFriend = {
+    friendsSince: Date.now(),
+    user: sendingUser._id,
+  };
 
   if (accept) {
-    sendingUser.friends.push(receivingUser);
-    receivingUser.friends.push(sendingUser);
+    sendingUser.friends.push(sendingUserFriend);
+    receivingUser.friends.push(receivingUserFriend);
   }
-
   try {
     await receivingUser.save();
     await sendingUser.save();
 
-    accept ? res.status(200).send({ success: { user: sendingUser } }) : res.status(200).send({ success: 'Request rejected.' });
+    receivingUserFriend.user = sendingUser;
+    accept ? res.status(200).send({ success: { friend: receivingUserFriend } }) : res.status(200).send({ success: 'Request rejected.' });
   } catch (err) {
     console.log(err);
-    res.status(500).send({ error: 'Could not accept friend request.' });
+    res.status(500).send({ error: 'Could not respond to friend request.' });
   }
 };
 
@@ -161,7 +182,8 @@ export const deleteFriend = async (req, res) => {
   }
 
   // Check for presence of userId in user's 'friends' arrays, and send error if not found
-  const index = deletingUser.friends.indexOf(mongoose.Types.ObjectId(userId));
+  // const index = deletingUser.friends.indexOf(mongoose.Types.ObjectId(userId));
+  const index = _.findIndex(deletingUser.friends, { user: mongoose.Types.ObjectId(userId) });
 
   if (index === -1) {
     return res.status(422).send({ error: 'That user is not currently in your friends list.' });
@@ -170,8 +192,8 @@ export const deleteFriend = async (req, res) => {
   const deletedUser = await User.findById(userId);
 
   // Remove users from users from each other's 'friends' arrays
-  deletingUser.friends = deletingUser.friends.filter(id => !id.equals(deletedUser._id));
-  deletedUser.friends = deletedUser.friends.filter(id => !id.equals(deletingUser._id));
+  deletingUser.friends = deletingUser.friends.filter(obj => !obj.user.equals(deletedUser._id));
+  deletedUser.friends = deletedUser.friends.filter(obj => !obj.user.equals(deletingUser._id));
 
   try {
     await deletingUser.save();
@@ -180,7 +202,7 @@ export const deleteFriend = async (req, res) => {
     res.status(200).send({ success: { friends: deletingUser.friends } });
   } catch (err) {
     console.log(err);
-    res.status(500).send({ error: 'User could not be unfriended.' })
+    res.status(500).send({ error: 'User could not be deleted.' })
   }
 };
 
@@ -188,7 +210,7 @@ export const getFriendsList = async(req, res) => {
   let { user } = req;
 
   try {
-    user = await User.findById(user._id).populate('friends');
+    user = await User.findById(user._id).populate('friends.user');
   } catch (err) {
     console.log(err);
     return res.status(500).send({ error: 'Could not retrieve friends list.' });
@@ -200,9 +222,9 @@ export const getFriendsList = async(req, res) => {
 
 export const getFriendRequestsList = async (req, res) => {
   let { user } = req;
-  console.log(user);
+
   try {
-    user = await User.findById(user._id).populate('friendRequests');
+    user = await User.findById(user._id).populate('friendRequests.user');
   } catch (err) {
     console.log(err);
     return res.status(500).send({ error: 'Could not retrieve friend requests list.' });

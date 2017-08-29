@@ -45,14 +45,14 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var addSong = exports.addSong = function () {
   var _ref = (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee(req, res) {
-    var user, _req$body, youTubeUrl, playlistId, playlist, song;
+    var user, _req$body, youTubeUrl, title, description, thumbnail, playlistId, playlist, song;
 
     return _regenerator2.default.wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
             user = req.user;
-            _req$body = req.body, youTubeUrl = _req$body.youTubeUrl, playlistId = _req$body.playlistId;
+            _req$body = req.body, youTubeUrl = _req$body.youTubeUrl, title = _req$body.title, description = _req$body.description, thumbnail = _req$body.thumbnail, playlistId = _req$body.playlistId;
 
             // Send errors if YouTube URL does not exist or is invalid
 
@@ -81,69 +81,85 @@ var addSong = exports.addSong = function () {
 
           case 12:
             if (_mongoose2.default.Types.ObjectId.isValid(playlistId)) {
-              _context.next = 14;
+              _context.next = 16;
               break;
             }
 
             return _context.abrupt('return', res.status(422).send({ error: 'The playlist ID provided is invalid.' }));
 
-          case 14:
+          case 16:
+            if (!(!title || !description || !thumbnail)) {
+              _context.next = 18;
+              break;
+            }
+
+            return _context.abrupt('return', res.status(422).send({ error: 'A title, description and thumbnail must be provided.' }));
+
+          case 18:
             playlist = _mongoose2.default.Types.ObjectId(playlistId);
-            _context.next = 17;
+            _context.next = 21;
             return _Song2.default.findOne({ youTubeUrl: youTubeUrl });
 
-          case 17:
+          case 21:
             song = _context.sent;
 
             if (!song) {
-              _context.next = 26;
+              _context.next = 30;
               break;
             }
 
             if (!(song.inPlaylists.indexOf(playlist) !== -1)) {
-              _context.next = 23;
+              _context.next = 27;
               break;
             }
 
             return _context.abrupt('return', res.status(422).send({ error: 'That song has already been added to the playlist.' }));
 
-          case 23:
+          case 27:
             song.inPlaylists.push(playlist); // Else push playlist to song's inPlaylists array
 
-          case 24:
-            _context.next = 27;
+          case 28:
+            _context.next = 31;
             break;
-
-          case 26:
-            song = new _Song2.default({ youTubeUrl: youTubeUrl, inPlaylists: [playlist] }); // If song doesn't exist, create new instance
-
-          case 27:
-            _context.prev = 27;
-            _context.next = 30;
-            return song.save();
 
           case 30:
-            _context.next = 32;
+            // If song doesn't exist, create new instance
+            song = new _Song2.default({
+              youTubeUrl: youTubeUrl,
+              title: title,
+              description: description,
+              thumbnail: thumbnail,
+              videoId: _youtubeUrl2.default.extractId(youTubeUrl),
+              inPlaylists: [playlist]
+            });
+
+          case 31:
+            _context.prev = 31;
+            _context.next = 34;
+            return song.save();
+
+          case 34:
+            _context.next = 36;
             return _Playlist2.default.findByIdAndUpdate(playlist, { lastUpdated: Date.now() });
 
-          case 32:
+          case 36:
             res.status(200).send({ success: { song: song } });
-            _context.next = 39;
+            _context.next = 43;
             break;
 
-          case 35:
-            _context.prev = 35;
-            _context.t0 = _context['catch'](27);
+          case 39:
+            _context.prev = 39;
+            _context.t0 = _context['catch'](31);
 
             console.log(_context.t0);
             res.status(500).send({ error: 'The song could not be added.' });
 
-          case 39:
+          case 43:
           case 'end':
             return _context.stop();
         }
       }
-    }, _callee, undefined, [[27, 35]]);
+    }, _callee, undefined, [[31, 39]]);
   }));
 
   return function addSong(_x, _x2) {

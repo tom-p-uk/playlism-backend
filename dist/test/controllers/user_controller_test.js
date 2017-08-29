@@ -478,6 +478,7 @@ describe('userController', function () {
             case 2:
               res = _context16.sent;
 
+
               (0, _chai.expect)(res.status).to.equal(401);
               (0, _chai.expect)(res.text).to.equal('Unauthorized');
 
@@ -543,7 +544,7 @@ describe('userController', function () {
               (0, _chai.expect)(res.status).to.equal(200);
               (0, _chai.expect)(res.body.success).to.exist;
               (0, _chai.expect)(foundUser.friendRequests.length).to.equal(1);
-              (0, _chai.expect)(foundUser.friendRequests.indexOf(user1._id)).to.not.equal(-1);
+              (0, _chai.expect)(_lodash2.default.findIndex(foundUser.friendRequests, { user: user1._id })).to.not.equal(-1);
 
             case 10:
             case 'end':
@@ -574,7 +575,7 @@ describe('userController', function () {
               (0, _chai.expect)(res.status).to.equal(200);
               (0, _chai.expect)(res.body.success).to.exist;
               (0, _chai.expect)(foundUser.friendRequestsSent.length).to.equal(1);
-              (0, _chai.expect)(foundUser.friendRequestsSent.indexOf(user2._id)).to.not.equal(-1);
+              (0, _chai.expect)(_lodash2.default.findIndex(foundUser.friendRequestsSent, { user: user2._id })).to.not.equal(-1);
 
             case 10:
             case 'end':
@@ -584,8 +585,8 @@ describe('userController', function () {
       }, _callee19, undefined);
     })));
 
-    it('sends back the user that receives the request as a response', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee20() {
-      var res, foundUser;
+    it("sends back an updated list of the user's friend requests sent as a response", (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee20() {
+      var res, index;
       return _regenerator2.default.wrap(function _callee20$(_context20) {
         while (1) {
           switch (_context20.prev = _context20.next) {
@@ -595,18 +596,16 @@ describe('userController', function () {
 
             case 2:
               res = _context20.sent;
-              _context20.next = 5;
-              return _User2.default.findById(user2._id);
-
-            case 5:
-              foundUser = _context20.sent;
-
+              index = _lodash2.default.findIndex(res.body.success.friendRequestsSent, function (friendRequest) {
+                return friendRequest.user === user2._id.toString();
+              });
 
               (0, _chai.expect)(res.status).to.equal(200);
               (0, _chai.expect)(res.body.success).to.exist;
-              (0, _chai.expect)(res.body.success.user._id).to.equal(user2._id.toString());
+              (0, _chai.expect)(res.body.success.friendRequestsSent).to.exist;
+              (0, _chai.expect)(index).to.not.equal(-1);
 
-            case 9:
+            case 8:
             case 'end':
               return _context20.stop();
           }
@@ -620,8 +619,8 @@ describe('userController', function () {
         while (1) {
           switch (_context21.prev = _context21.next) {
             case 0:
-              user1.friendRequestsSent = [user2];
-              user2.friendRequests = [user1];
+              user1.friendRequestsSent = [{ user: user2, dateSent: Date.now() }];
+              user2.friendRequests = [{ user: user1, dateReceived: Date.now() }];
 
               _context21.next = 4;
               return user1.save();
@@ -679,10 +678,10 @@ describe('userController', function () {
                 firstName: 'Test',
                 lastName: 'User',
                 displayName: 'Test User2',
-                friendRequests: [user1]
+                friendRequests: [{ user: user1._id, dateReceived: Date.now() }]
               });
 
-              user1.friendRequestsSent = [user2];
+              user1.friendRequestsSent = [{ user: user2._id, dateSent: Date.now() }];
               user2Token = (0, _token2.default)(user2);
 
               _context22.next = 5;
@@ -790,7 +789,7 @@ describe('userController', function () {
             case 0:
               user3 = new _User2.default();
 
-              user2.friendRequests.push(user3);
+              user2.friendRequests.push({ user: user3, dateReceived: Date.now() });
               _context26.next = 4;
               return user2.save();
 
@@ -810,7 +809,7 @@ describe('userController', function () {
               (0, _chai.expect)(res.status).to.equal(200);
               (0, _chai.expect)(res.body.success).to.exist;
               (0, _chai.expect)(foundUser.friendRequests.length).to.equal(1);
-              (0, _chai.expect)(foundUser.friendRequests.indexOf(user1._id)).to.equal(-1);
+              (0, _chai.expect)(_lodash2.default.findIndex(foundUser.friendRequests, { user: user1._id })).to.equal(-1);
 
             case 14:
             case 'end':
@@ -841,7 +840,7 @@ describe('userController', function () {
               (0, _chai.expect)(res.status).to.equal(200);
               (0, _chai.expect)(res.body.success).to.exist;
               (0, _chai.expect)(foundUser.friendRequestsSent.length).to.equal(0);
-              (0, _chai.expect)(foundUser.friendRequestsSent.indexOf(user2._id)).to.equal(-1);
+              (0, _chai.expect)(_lodash2.default.findIndex(foundUser.friendRequestsSent, { user: user2._id })).to.equal(-1);
 
             case 10:
             case 'end':
@@ -872,7 +871,7 @@ describe('userController', function () {
               (0, _chai.expect)(res.status).to.equal(200);
               (0, _chai.expect)(res.body.success).to.exist;
               (0, _chai.expect)(foundUser.friends.length).to.equal(1);
-              (0, _chai.expect)(foundUser.friends.indexOf(user1._id)).to.not.equal(-1);
+              (0, _chai.expect)(_lodash2.default.findIndex(foundUser.friends, { user: user1._id })).to.not.equal(-1);
 
             case 10:
             case 'end':
@@ -903,7 +902,7 @@ describe('userController', function () {
               (0, _chai.expect)(res.status).to.equal(200);
               (0, _chai.expect)(res.body.success).to.exist;
               (0, _chai.expect)(foundUser.friends.length).to.equal(1);
-              (0, _chai.expect)(foundUser.friends.indexOf(user2._id)).to.not.equal(-1);
+              (0, _chai.expect)(_lodash2.default.findIndex(foundUser.friends, { user: user2._id })).to.not.equal(-1);
 
             case 10:
             case 'end':
@@ -934,7 +933,7 @@ describe('userController', function () {
               (0, _chai.expect)(res.status).to.equal(200);
               (0, _chai.expect)(res.body.success).to.exist;
               (0, _chai.expect)(foundUser.friends.length).to.equal(0);
-              (0, _chai.expect)(foundUser.friends.indexOf(user1._id)).to.equal(-1);
+              (0, _chai.expect)(_lodash2.default.findIndex(foundUser.friends, { user: user1._id })).to.equal(-1);
 
             case 10:
             case 'end':
@@ -965,7 +964,7 @@ describe('userController', function () {
               (0, _chai.expect)(res.status).to.equal(200);
               (0, _chai.expect)(res.body.success).to.exist;
               (0, _chai.expect)(foundUser.friends.length).to.equal(0);
-              (0, _chai.expect)(foundUser.friends.indexOf(user2._id)).to.equal(-1);
+              (0, _chai.expect)(_lodash2.default.findIndex(foundUser.friends, { user: user2._id })).to.equal(-1);
 
             case 10:
             case 'end':
@@ -996,10 +995,11 @@ describe('userController', function () {
                 firstName: 'Test',
                 lastName: 'User',
                 displayName: 'Test User2',
-                friends: [user1, user3]
+                friends: [{ user: user1._id, friendsSince: Date.now() }, { user: user3._id, friendsSince: Date.now() }]
               });
 
-              user1.friends = [user2, user3];
+              user1.friends = [{ user: user2._id, friendsSince: Date.now() }, { user: user3._id, friendsSince: Date.now() }];
+
               _context32.next = 5;
               return user1.save();
 
@@ -1123,9 +1123,9 @@ describe('userController', function () {
               (0, _chai.expect)(res.status).to.equal(200);
               (0, _chai.expect)(res.body.success).to.exist;
               (0, _chai.expect)(foundUser1.friends.length).to.equal(1);
-              (0, _chai.expect)(foundUser1.friends.indexOf(user2._id)).to.equal(-1);
+              (0, _chai.expect)(_lodash2.default.findIndex(foundUser1.friends, { user: user2._id })).to.equal(-1);
               (0, _chai.expect)(foundUser2.friends.length).to.equal(1);
-              (0, _chai.expect)(foundUser2.friends.indexOf(user1._id)).to.equal(-1);
+              (0, _chai.expect)(_lodash2.default.findIndex(foundUser2.friends, { user: user1._id })).to.equal(-1);
 
             case 15:
             case 'end':
@@ -1313,8 +1313,9 @@ describe('userController', function () {
   /*****************************************************************************
   ******************************** .searchUsers ********************************
   *****************************************************************************/
-  describe.only('.searchUsers', function () {
+  describe('.searchUsers', function () {
     var user2 = void 0;
+    var user3 = void 0;
     var user2Token = void 0;
 
     beforeEach((0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee43() {
@@ -1329,10 +1330,21 @@ describe('userController', function () {
                 displayNameLower: 'test user2'
               });
 
-              _context43.next = 3;
+              user3 = new _User2.default({
+                firstName: 'Test',
+                lastName: 'User',
+                displayName: 'Test User3',
+                displayNameLower: 'test user3'
+              });
+
+              _context43.next = 4;
               return user2.save();
 
-            case 3:
+            case 4:
+              _context43.next = 6;
+              return user3.save();
+
+            case 6:
             case 'end':
               return _context43.stop();
           }
@@ -1395,7 +1407,7 @@ describe('userController', function () {
           switch (_context46.prev = _context46.next) {
             case 0:
               _context46.next = 2;
-              return (0, _supertest2.default)(_app2.default).get('/api/user/search/' + encodeURI('Test User1')).set('authorization', user1Token);
+              return (0, _supertest2.default)(_app2.default).get('/api/user/search/' + encodeURI('Test User2')).set('authorization', user1Token);
 
             case 2:
               res = _context46.sent;
@@ -1405,7 +1417,7 @@ describe('userController', function () {
               (0, _chai.expect)(res.body.success).to.exist;
               (0, _chai.expect)(res.body.success.users).to.be.an('array');
               (0, _chai.expect)(res.body.success.users.length).to.equal(1);
-              (0, _chai.expect)(_lodash2.default.findIndex(res.body.success.users, { '_id': user1._id.toString() })).to.not.equal(-1);
+              (0, _chai.expect)(_lodash2.default.findIndex(res.body.success.users, { '_id': user2._id.toString() })).to.not.equal(-1);
 
             case 8:
             case 'end':
@@ -1422,7 +1434,7 @@ describe('userController', function () {
           switch (_context47.prev = _context47.next) {
             case 0:
               _context47.next = 2;
-              return (0, _supertest2.default)(_app2.default).get('/api/user/search/' + encodeURI('test user1')).set('authorization', user1Token);
+              return (0, _supertest2.default)(_app2.default).get('/api/user/search/' + encodeURI('test user2')).set('authorization', user1Token);
 
             case 2:
               res = _context47.sent;
@@ -1432,7 +1444,7 @@ describe('userController', function () {
               (0, _chai.expect)(res.body.success).to.exist;
               (0, _chai.expect)(res.body.success.users).to.be.an('array');
               (0, _chai.expect)(res.body.success.users.length).to.equal(1);
-              (0, _chai.expect)(_lodash2.default.findIndex(res.body.success.users, { '_id': user1._id.toString() })).to.not.equal(-1);
+              (0, _chai.expect)(_lodash2.default.findIndex(res.body.success.users, { '_id': user2._id.toString() })).to.not.equal(-1);
 
             case 8:
             case 'end':
@@ -1442,14 +1454,14 @@ describe('userController', function () {
       }, _callee47, undefined);
     })));
 
-    it('returns search results for partial display name matches', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee48() {
+    it('excludes the searching user from the search results', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee48() {
       var res;
       return _regenerator2.default.wrap(function _callee48$(_context48) {
         while (1) {
           switch (_context48.prev = _context48.next) {
             case 0:
               _context48.next = 2;
-              return (0, _supertest2.default)(_app2.default).get('/api/user/search/' + encodeURI('test')).set('authorization', user1Token);
+              return (0, _supertest2.default)(_app2.default).get('/api/user/search/' + encodeURI('Test User1')).set('authorization', user1Token);
 
             case 2:
               res = _context48.sent;
@@ -1458,16 +1470,44 @@ describe('userController', function () {
               (0, _chai.expect)(res.status).to.equal(200);
               (0, _chai.expect)(res.body.success).to.exist;
               (0, _chai.expect)(res.body.success.users).to.be.an('array');
-              (0, _chai.expect)(res.body.success.users.length).to.equal(2);
-              (0, _chai.expect)(_lodash2.default.findIndex(res.body.success.users, { '_id': user1._id.toString() })).to.not.equal(-1);
-              (0, _chai.expect)(_lodash2.default.findIndex(res.body.success.users, { '_id': user2._id.toString() })).to.not.equal(-1);
+              (0, _chai.expect)(res.body.success.users.length).to.equal(0);
+              (0, _chai.expect)(_lodash2.default.findIndex(res.body.success.users, { '_id': user1._id.toString() })).to.equal(-1);
 
-            case 9:
+            case 8:
             case 'end':
               return _context48.stop();
           }
         }
       }, _callee48, undefined);
+    })));
+
+    it('returns search results for partial display name matches', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee49() {
+      var res;
+      return _regenerator2.default.wrap(function _callee49$(_context49) {
+        while (1) {
+          switch (_context49.prev = _context49.next) {
+            case 0:
+              _context49.next = 2;
+              return (0, _supertest2.default)(_app2.default).get('/api/user/search/' + encodeURI('test')).set('authorization', user1Token);
+
+            case 2:
+              res = _context49.sent;
+
+
+              (0, _chai.expect)(res.status).to.equal(200);
+              (0, _chai.expect)(res.body.success).to.exist;
+              (0, _chai.expect)(res.body.success.users).to.be.an('array');
+              (0, _chai.expect)(res.body.success.users.length).to.equal(2);
+              (0, _chai.expect)(_lodash2.default.findIndex(res.body.success.users, { '_id': user1._id.toString() })).to.equal(-1);
+              (0, _chai.expect)(_lodash2.default.findIndex(res.body.success.users, { '_id': user2._id.toString() })).to.not.equal(-1);
+              (0, _chai.expect)(_lodash2.default.findIndex(res.body.success.users, { '_id': user3._id.toString() })).to.not.equal(-1);
+
+            case 10:
+            case 'end':
+              return _context49.stop();
+          }
+        }
+      }, _callee49, undefined);
     })));
   });
 });

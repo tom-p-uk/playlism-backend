@@ -31,14 +31,14 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var facebookOptions = {
   clientID: process.env.FACEBOOK_APP_ID,
   clientSecret: process.env.FACEBOOK_APP_SECRET,
-  callbackURL: 'https://playlism.herokuapp.com/api/auth/facebook/callback',
+  callbackURL: 'http://127.0.0.1:3000/api/auth/facebook/callback',
   profileFields: ['id', 'name', 'picture.type(large)']
 };
 
 var googleOptions = {
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: 'https://playlism.herokuapp.com/api/auth/google/callback'
+  callbackURL: 'http://127.0.0.1:3000/api/auth/google/callback'
 };
 
 var jwtOptions = {
@@ -57,7 +57,17 @@ var facebookLogin = new _passportFacebook2.default(facebookOptions, function () 
             _context.prev = 0;
             _profile$_json = profile._json, id = _profile$_json.id, first_name = _profile$_json.first_name, last_name = _profile$_json.last_name, picture = _profile$_json.picture;
             _context.next = 4;
-            return _User2.default.findOrCreate({ 'facebookId': id }, {
+            return _User2.default.findOneAndUpdate({ 'facebookId': id }, { lastLogin: Date.now() });
+
+          case 4:
+            user = _context.sent;
+
+            if (user) {
+              _context.next = 9;
+              break;
+            }
+
+            user = new _User2.default({
               displayName: first_name + ' ' + last_name,
               facebookId: id,
               firstName: first_name,
@@ -66,26 +76,27 @@ var facebookLogin = new _passportFacebook2.default(facebookOptions, function () 
               displayNameLower: (first_name + ' ' + last_name).toLowerCase()
             });
 
-          case 4:
-            user = _context.sent;
+            _context.next = 9;
+            return user.save();
 
+          case 9:
 
-            done(null, user.result);
-            _context.next = 11;
+            done(null, user);
+            _context.next = 15;
             break;
 
-          case 8:
-            _context.prev = 8;
+          case 12:
+            _context.prev = 12;
             _context.t0 = _context['catch'](0);
 
-            done(_context.t0);
+            done(_context.t0, false);
 
-          case 11:
+          case 15:
           case 'end':
             return _context.stop();
         }
       }
-    }, _callee, undefined, [[0, 8]]);
+    }, _callee, undefined, [[0, 12]]);
   }));
 
   return function (_x, _x2, _x3, _x4) {
@@ -104,7 +115,17 @@ var googleLogin = new _passportGoogleOauth2.default(googleOptions, function () {
             _context2.prev = 0;
             _profile$_json2 = profile._json, id = _profile$_json2.id, name = _profile$_json2.name, displayName = _profile$_json2.displayName, image = _profile$_json2.image;
             _context2.next = 4;
-            return _User2.default.findOrCreate({ 'googleId': id }, {
+            return _User2.default.findOneAndUpdate({ 'googleId': id }, { lastLogin: Date.now() });
+
+          case 4:
+            user = _context2.sent;
+
+            if (user) {
+              _context2.next = 9;
+              break;
+            }
+
+            user = new _User2.default({
               displayName: displayName,
               googleId: id,
               firstName: name.givenName,
@@ -113,26 +134,26 @@ var googleLogin = new _passportGoogleOauth2.default(googleOptions, function () {
               displayNameLower: displayName.toLowerCase()
             });
 
-          case 4:
-            user = _context2.sent;
+            _context2.next = 9;
+            return user.save();
 
-
-            done(null, user.result);
-            _context2.next = 11;
+          case 9:
+            done(null, user);
+            _context2.next = 15;
             break;
 
-          case 8:
-            _context2.prev = 8;
+          case 12:
+            _context2.prev = 12;
             _context2.t0 = _context2['catch'](0);
 
-            done(_context2.t0);
+            done(_context2.t0, false);
 
-          case 11:
+          case 15:
           case 'end':
             return _context2.stop();
         }
       }
-    }, _callee2, undefined, [[0, 8]]);
+    }, _callee2, undefined, [[0, 12]]);
   }));
 
   return function (_x5, _x6, _x7, _x8) {
@@ -149,7 +170,7 @@ var jwtLogin = new _passportJwt.Strategy(jwtOptions, function () {
           case 0:
             _context3.prev = 0;
             _context3.next = 3;
-            return _User2.default.findById(jwt_payload.sub);
+            return _User2.default.findByIdAndUpdate(jwt_payload.sub, { lastLogin: Date.now() });
 
           case 3:
             user = _context3.sent;

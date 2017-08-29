@@ -1,5 +1,4 @@
 import mongoose, { Schema } from 'mongoose';
-import findOrCreate from 'findorcreate-promise';
 
 mongoose.Promise = global.Promise;
 
@@ -14,28 +13,38 @@ const UserSchema = new Schema({
   googleId: String,
   facebookId: String,
   profileImg: String,
-  dateJoined: {
+  friends: [{
+    friendsSince: Date,
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: 'user'
+    },
+  }],
+  friendRequests: [{
+    dateReceived: Date,
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: 'user'
+    },
+  }],
+  friendRequestsSent: [{
+    dateSent: Date,
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: 'user'
+    },
+  }],
+  lastLogin: {
     type: Date,
     default: Date.now(),
   },
-  friends: [{
-    type: Schema.Types.ObjectId,
-    ref: 'user'
-  }],
-  friendRequests: [{
-    type: Schema.Types.ObjectId,
-    ref: 'user'
-  }],
-  friendRequestsSent: [{
-    type: Schema.Types.ObjectId,
-    ref: 'user',
-  }],
-  lastLogin: Date,
   pushToken: String,
   displayNameLower: String,
+}, {
+  timestamps: {
+    createdAt: 'dateJoined'
+  }
 });
-
-UserSchema.plugin(findOrCreate);
 
 const User = mongoose.model('user', UserSchema);
 

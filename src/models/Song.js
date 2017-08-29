@@ -3,14 +3,16 @@ import mongoose, { Schema } from 'mongoose';
 mongoose.Promise = global.Promise;
 
 const SongSchema = new Schema({
-  dateAdded: {
-    type: Date,
-    default: Date.now(),
-  },
   youTubeUrl: {
     required: true,
     type: String,
   },
+  videoId: {
+    type: String,
+  },
+  title: String,
+  description: String,
+  thumbnail: String,
   likedByUsers: [{
     type: Schema.Types.ObjectId,
     ref: 'user',
@@ -19,6 +21,10 @@ const SongSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'playlist',
   }],
+}, {
+  timestamps: {
+    createdAt: 'dateAdded'
+  }
 });
 
 const Song = mongoose.model('song', SongSchema);

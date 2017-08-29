@@ -17,11 +17,7 @@ var PlaylistSchema = new _mongoose.Schema({
     type: String,
     required: [true, 'Playlist title must be provided.'],
     minlength: [4, 'Playlist title must be at least 4 characters long.'],
-    maxlength: [50, 'Playlist title must no more than 50 characters long.']
-  },
-  dateAdded: {
-    type: Date,
-    default: Date.now()
+    maxlength: [30, 'Playlist title must be no more than 30 characters long.']
   },
   byUser: {
     type: _mongoose.Schema.Types.ObjectId,
@@ -37,7 +33,14 @@ var PlaylistSchema = new _mongoose.Schema({
     type: _mongoose.Schema.Types.ObjectId,
     ref: 'song'
   },
-  lastUpdated: Date
+  lastUpdated: {
+    type: Date,
+    default: Date.now()
+  }
+}, {
+  timestamps: {
+    createdAt: 'dateAdded'
+  }
 });
 
 var Playlist = _mongoose2.default.model('playlist', PlaylistSchema);

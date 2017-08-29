@@ -112,10 +112,30 @@ describe('songController', () => {
       expect(foundSongs.length).to.equal(0);
     });
 
-    it('adds a song following a successful POST request', async () => {
+    it('sends an error if a title, description or thumbnail are not provided', async () => {
       const res = await request(app)
         .post('/api/song')
         .send({ youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4', playlistId: playlist1._id })
+        .set('authorization', user1Token);
+
+      const foundSongs = await Song.find({});
+
+      expect(res.status).to.equal(422);
+      expect(res.body.error).to.exist;
+      expect(res.body.error).to.equal('A title, description and thumbnail must be provided.');
+      expect(foundSongs.length).to.equal(0);
+    });
+
+    it('adds a song following a successful POST request', async () => {
+      const res = await request(app)
+        .post('/api/song')
+        .send({
+          youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4',
+          playlistId: playlist1._id,
+          title: 'Title',
+          description: 'Description',
+          thumbnail: 'http://thumbnailurl.com',
+        })
         .set('authorization', user1Token);
 
       const foundSongs = await Song.find({});
@@ -133,7 +153,13 @@ describe('songController', () => {
 
       const res = await request(app)
         .post('/api/song')
-        .send({ youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4', playlistId: playlist1._id })
+        .send({
+          youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4',
+          playlistId: playlist1._id,
+          title: 'Title',
+          description: 'Description',
+          thumbnail: 'http://thumbnailurl.com',
+        })
         .set('authorization', user1Token);
 
       const foundSongs = await Song.find({});
@@ -145,12 +171,19 @@ describe('songController', () => {
     });
 
     it("adds a playlist to a song's 'inPlaylists' arr if song already exists", async () => {
-      const song = new Song({ youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4', inPlaylists: [playlist1._id] });
+      const song = new Song({
+        youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4', inPlaylists: [playlist1._id] });
       await song.save();
 
       const res = await request(app)
         .post('/api/song')
-        .send({ youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4', playlistId: playlist2._id })
+        .send({
+          youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4',
+          playlistId: playlist2._id,
+          title: 'Title',
+          description: 'Description',
+          thumbnail: 'http://thumbnailurl.com',
+        })
         .set('authorization', user1Token);
 
       const foundSong = await Song.findOne({ youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4' });

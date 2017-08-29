@@ -8,7 +8,7 @@ import _ from 'lodash';
 
 export const addSong = async (req, res) => {
   const { user } = req;
-  const  { youTubeUrl, playlistId } = req.body;
+  const  { youTubeUrl, title, description, thumbnail, playlistId } = req.body;
 
   // Send errors if YouTube URL does not exist or is invalid
   if (!youTubeUrl) {
@@ -17,11 +17,13 @@ export const addSong = async (req, res) => {
     return res.status(422).send({ error: 'The YouTube URL provided is invalid.' });
   }
 
-  // Send errors if playlistId doesn't exist or is invalid
+  // Send errors if playlistId doesn't exist or is invalid, or if title/description/thumbnail not provided
   if (!playlistId) {
     return res.status(422).send({ error: 'A playlist ID must be provided.' });
   } else if (!mongoose.Types.ObjectId.isValid(playlistId)) {
     return res.status(422).send({ error: 'The playlist ID provided is invalid.' });
+  } else if (!title || !description || !thumbnail) {
+    return res.status(422).send({ error: 'A title, description and thumbnail must be provided.' });   // TODO add tests for this
   }
 
   const playlist = mongoose.Types.ObjectId(playlistId);
@@ -33,8 +35,15 @@ export const addSong = async (req, res) => {
     } else {
       song.inPlaylists.push(playlist); // Else push playlist to song's inPlaylists array
     }
-  } else {
-    song = new Song({ youTubeUrl, inPlaylists: [playlist] }); // If song doesn't exist, create new instance
+  } else { // If song doesn't exist, create new instance
+    song = new Song({
+      youTubeUrl,
+      title,
+      description,
+      thumbnail,
+      videoId: validateUrl.extractId(youTubeUrl),
+      inPlaylists: [playlist]
+    });
   }
 
   try {

@@ -94,7 +94,7 @@ describe('playlistController', () => {
 
       expect(res.status).to.equal(422);
       expect(res.body.error).to.exist;
-      expect(res.body.error).to.equal('Playlist title must no more than 50 characters long.');
+      expect(res.body.error).to.equal('Playlist title must be no more than 30 characters long.');
       expect(foundPlaylist).to.equal(null);
     });
 
@@ -443,7 +443,7 @@ describe('playlistController', () => {
 
     it('can only be accessed by passing a valid JWT', async () => {
       const res = await request(app)
-        .get(`/api/playlist/foruser/${user1._id}`);
+        .get('/api/playlist/foruser/');
 
       expect(res.status).to.equal(401);
       expect(res.text).to.equal('Unauthorized');
@@ -451,7 +451,7 @@ describe('playlistController', () => {
 
     it('returns an array of playlists folllowing a successful GET request', async () => {
       const res = await request(app)
-        .get(`/api/playlist/foruser/${user1._id}`)
+        .get('/api/playlist/foruser/')
         .set('authorization', user1Token);
 
       expect(res.status).to.equal(200);
@@ -495,7 +495,7 @@ describe('playlistController', () => {
 
     it('can only be accessed by passing a valid JWT', async () => {
       const res = await request(app)
-        .get(`/api/playlist/foruser/${user1._id}`);
+        .get('/api/playlist/byuser');
 
       expect(res.status).to.equal(401);
       expect(res.text).to.equal('Unauthorized');
@@ -503,7 +503,7 @@ describe('playlistController', () => {
 
     it('returns an array of playlists folllowing a successful GET request', async () => {
       const res = await request(app)
-        .get(`/api/playlist/byuser/${user1._id}`)
+        .get('/api/playlist/byuser')
         .set('authorization', user1Token);
 
       expect(res.status).to.equal(200);

@@ -1,13 +1,16 @@
 import Playlist from '../models/Playlist';
 import Song from '../models/Song';
+import User from '../models/User';
 import tokenForUser from '../utils/token';
 import mongoose from 'mongoose';
 import validateSong from '../utils/validate_song';
 import validatePlaylist from '../utils/validate_playlist';
 
 export const createPlaylist = async (req, res) => {
-  const { title, forUser } = req.body;
+  let { title, forUser } = req.body;
   const byUser = req.user;
+
+  forUser = await User.findById(forUser);
 
   const playlist = new Playlist({
     title,
@@ -64,6 +67,8 @@ export const editPlaylistTitle = async (req, res) => {
     return res.status(status).send({ error });
   }
 
+  playlist.title = title;
+
   try {
     await playlist.update({ title });
     res.status(200).send({ success: { playlist } });
@@ -110,7 +115,9 @@ export const fetchForUserPlaylists = async (req, res) => {
   const { user } = req;
 
   try {
-    const playlists = await Playlist.find({ forUser: user._id });
+    const playlists = await Playlist.find({ forUser: user._id })
+      .populate('forUser')
+      .populate('byUser');
     res.status(200).send({ success: { playlists } });
   } catch (err) {
     console.log(err);
@@ -122,7 +129,9 @@ export const fetchByUserPlaylists = async (req, res) => {
   const { user } = req;
 
   try {
-    const playlists = await Playlist.find({ byUser: user._id });
+    const playlists = await Playlist.find({ byUser: user._id })
+    .populate('forUser')
+    .populate('byUser');
     res.status(200).send({ success: { playlists } });
   } catch (err) {
     console.log(err);

@@ -21,6 +21,10 @@ var _Song = require('../models/Song');
 
 var _Song2 = _interopRequireDefault(_Song);
 
+var _User = require('../models/User');
+
+var _User2 = _interopRequireDefault(_User);
+
 var _token = require('../utils/token');
 
 var _token2 = _interopRequireDefault(_token);
@@ -49,24 +53,29 @@ var createPlaylist = exports.createPlaylist = function () {
           case 0:
             _req$body = req.body, title = _req$body.title, forUser = _req$body.forUser;
             byUser = req.user;
+            _context.next = 4;
+            return _User2.default.findById(forUser);
+
+          case 4:
+            forUser = _context.sent;
             playlist = new _Playlist2.default({
               title: title,
               forUser: forUser,
               byUser: byUser,
               lastUpdated: Date.now()
             });
-            _context.prev = 3;
-            _context.next = 6;
+            _context.prev = 6;
+            _context.next = 9;
             return playlist.save();
 
-          case 6:
+          case 9:
             res.status(201).send({ success: { playlist: playlist } });
-            _context.next = 13;
+            _context.next = 16;
             break;
 
-          case 9:
-            _context.prev = 9;
-            _context.t0 = _context['catch'](3);
+          case 12:
+            _context.prev = 12;
+            _context.t0 = _context['catch'](6);
 
             console.log(_context.t0);
 
@@ -78,12 +87,12 @@ var createPlaylist = exports.createPlaylist = function () {
               res.status(500).send({ error: 'The playlist could not be created.' });
             }
 
-          case 13:
+          case 16:
           case 'end':
             return _context.stop();
         }
       }
-    }, _callee, undefined, [[3, 9]]);
+    }, _callee, undefined, [[6, 12]]);
   }));
 
   return function createPlaylist(_x, _x2) {
@@ -169,18 +178,21 @@ var editPlaylistTitle = exports.editPlaylistTitle = function () {
             return _context3.abrupt('return', res.status(status).send({ error: error }));
 
           case 9:
-            _context3.prev = 9;
-            _context3.next = 12;
+
+            playlist.title = title;
+
+            _context3.prev = 10;
+            _context3.next = 13;
             return playlist.update({ title: title });
 
-          case 12:
+          case 13:
             res.status(200).send({ success: { playlist: playlist } });
-            _context3.next = 19;
+            _context3.next = 20;
             break;
 
-          case 15:
-            _context3.prev = 15;
-            _context3.t0 = _context3['catch'](9);
+          case 16:
+            _context3.prev = 16;
+            _context3.t0 = _context3['catch'](10);
 
             console.log(_context3.t0);
             if (_context3.t0.errors.title) {
@@ -189,12 +201,12 @@ var editPlaylistTitle = exports.editPlaylistTitle = function () {
               res.status(500).send({ error: 'The playlist title could not be edited.' });
             }
 
-          case 19:
+          case 20:
           case 'end':
             return _context3.stop();
         }
       }
-    }, _callee3, undefined, [[9, 15]]);
+    }, _callee3, undefined, [[10, 16]]);
   }));
 
   return function editPlaylistTitle(_x5, _x6) {
@@ -287,7 +299,7 @@ var fetchForUserPlaylists = exports.fetchForUserPlaylists = function () {
             user = req.user;
             _context5.prev = 1;
             _context5.next = 4;
-            return _Playlist2.default.find({ forUser: user._id });
+            return _Playlist2.default.find({ forUser: user._id }).populate('forUser').populate('byUser');
 
           case 4:
             playlists = _context5.sent;
@@ -326,7 +338,7 @@ var fetchByUserPlaylists = exports.fetchByUserPlaylists = function () {
             user = req.user;
             _context6.prev = 1;
             _context6.next = 4;
-            return _Playlist2.default.find({ byUser: user._id });
+            return _Playlist2.default.find({ byUser: user._id }).populate('forUser').populate('byUser');
 
           case 4:
             playlists = _context6.sent;

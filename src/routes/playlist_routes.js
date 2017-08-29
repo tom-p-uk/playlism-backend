@@ -16,7 +16,7 @@ router.post('/', requireAuth, createPlaylist);
 router.delete('/:playlistId', requireAuth, deletePlaylist);
 router.put('/title/:playlistId', requireAuth, editPlaylistTitle);
 router.put('/lastsongplayed/:playlistId', requireAuth, updateLastSongPlayed);
-router.get('/foruser/:userId', requireAuth, fetchForUserPlaylists);
-router.get('/byuser/:userId', requireAuth, fetchByUserPlaylists);
+router.get('/foruser', requireAuth, fetchForUserPlaylists);
+router.get('/byuser', requireAuth, fetchByUserPlaylists);
 
 export default router;

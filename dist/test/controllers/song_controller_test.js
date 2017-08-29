@@ -251,7 +251,7 @@ describe('songController', function () {
       }, _callee6, undefined);
     })));
 
-    it('adds a song following a successful POST request', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee7() {
+    it('sends an error if a title, description or thumbnail are not provided', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee7() {
       var res, foundSongs;
       return _regenerator2.default.wrap(function _callee7$(_context7) {
         while (1) {
@@ -269,6 +269,43 @@ describe('songController', function () {
               foundSongs = _context7.sent;
 
 
+              (0, _chai.expect)(res.status).to.equal(422);
+              (0, _chai.expect)(res.body.error).to.exist;
+              (0, _chai.expect)(res.body.error).to.equal('A title, description and thumbnail must be provided.');
+              (0, _chai.expect)(foundSongs.length).to.equal(0);
+
+            case 10:
+            case 'end':
+              return _context7.stop();
+          }
+        }
+      }, _callee7, undefined);
+    })));
+
+    it('adds a song following a successful POST request', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee8() {
+      var res, foundSongs;
+      return _regenerator2.default.wrap(function _callee8$(_context8) {
+        while (1) {
+          switch (_context8.prev = _context8.next) {
+            case 0:
+              _context8.next = 2;
+              return (0, _supertest2.default)(_app2.default).post('/api/song').send({
+                youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4',
+                playlistId: playlist1._id,
+                title: 'Title',
+                description: 'Description',
+                thumbnail: 'http://thumbnailurl.com'
+              }).set('authorization', user1Token);
+
+            case 2:
+              res = _context8.sent;
+              _context8.next = 5;
+              return _Song2.default.find({});
+
+            case 5:
+              foundSongs = _context8.sent;
+
+
               (0, _chai.expect)(res.status).to.equal(200);
               (0, _chai.expect)(res.body.success).to.exist;
               (0, _chai.expect)(res.body.success.song.youTubeUrl).to.equal('https://www.youtube.com/watch?v=YoB8t0B4jx4');
@@ -277,50 +314,14 @@ describe('songController', function () {
 
             case 11:
             case 'end':
-              return _context7.stop();
-          }
-        }
-      }, _callee7, undefined);
-    })));
-
-    it("sends an error if the provided playlist already exists in a song's 'inPlaylists' array", (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee8() {
-      var song, res, foundSongs;
-      return _regenerator2.default.wrap(function _callee8$(_context8) {
-        while (1) {
-          switch (_context8.prev = _context8.next) {
-            case 0:
-              song = new _Song2.default({ youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4', inPlaylists: [playlist1._id] });
-              _context8.next = 3;
-              return song.save();
-
-            case 3:
-              _context8.next = 5;
-              return (0, _supertest2.default)(_app2.default).post('/api/song').send({ youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4', playlistId: playlist1._id }).set('authorization', user1Token);
-
-            case 5:
-              res = _context8.sent;
-              _context8.next = 8;
-              return _Song2.default.find({});
-
-            case 8:
-              foundSongs = _context8.sent;
-
-
-              (0, _chai.expect)(res.status).to.equal(422);
-              (0, _chai.expect)(res.body.error).to.exist;
-              (0, _chai.expect)(res.body.error).to.equal('That song has already been added to the playlist.');
-              (0, _chai.expect)(foundSongs.length).to.equal(1);
-
-            case 13:
-            case 'end':
               return _context8.stop();
           }
         }
       }, _callee8, undefined);
     })));
 
-    it("adds a playlist to a song's 'inPlaylists' arr if song already exists", (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee9() {
-      var song, res, foundSong;
+    it("sends an error if the provided playlist already exists in a song's 'inPlaylists' array", (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee9() {
+      var song, res, foundSongs;
       return _regenerator2.default.wrap(function _callee9$(_context9) {
         while (1) {
           switch (_context9.prev = _context9.next) {
@@ -331,15 +332,64 @@ describe('songController', function () {
 
             case 3:
               _context9.next = 5;
-              return (0, _supertest2.default)(_app2.default).post('/api/song').send({ youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4', playlistId: playlist2._id }).set('authorization', user1Token);
+              return (0, _supertest2.default)(_app2.default).post('/api/song').send({
+                youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4',
+                playlistId: playlist1._id,
+                title: 'Title',
+                description: 'Description',
+                thumbnail: 'http://thumbnailurl.com'
+              }).set('authorization', user1Token);
 
             case 5:
               res = _context9.sent;
               _context9.next = 8;
+              return _Song2.default.find({});
+
+            case 8:
+              foundSongs = _context9.sent;
+
+
+              (0, _chai.expect)(res.status).to.equal(422);
+              (0, _chai.expect)(res.body.error).to.exist;
+              (0, _chai.expect)(res.body.error).to.equal('That song has already been added to the playlist.');
+              (0, _chai.expect)(foundSongs.length).to.equal(1);
+
+            case 13:
+            case 'end':
+              return _context9.stop();
+          }
+        }
+      }, _callee9, undefined);
+    })));
+
+    it("adds a playlist to a song's 'inPlaylists' arr if song already exists", (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee10() {
+      var song, res, foundSong;
+      return _regenerator2.default.wrap(function _callee10$(_context10) {
+        while (1) {
+          switch (_context10.prev = _context10.next) {
+            case 0:
+              song = new _Song2.default({
+                youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4', inPlaylists: [playlist1._id] });
+              _context10.next = 3;
+              return song.save();
+
+            case 3:
+              _context10.next = 5;
+              return (0, _supertest2.default)(_app2.default).post('/api/song').send({
+                youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4',
+                playlistId: playlist2._id,
+                title: 'Title',
+                description: 'Description',
+                thumbnail: 'http://thumbnailurl.com'
+              }).set('authorization', user1Token);
+
+            case 5:
+              res = _context10.sent;
+              _context10.next = 8;
               return _Song2.default.findOne({ youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4' });
 
             case 8:
-              foundSong = _context9.sent;
+              foundSong = _context10.sent;
 
 
               (0, _chai.expect)(res.status).to.equal(200);
@@ -352,10 +402,10 @@ describe('songController', function () {
 
             case 16:
             case 'end':
-              return _context9.stop();
+              return _context10.stop();
           }
         }
-      }, _callee9, undefined);
+      }, _callee10, undefined);
     })));
   });
 
@@ -365,43 +415,19 @@ describe('songController', function () {
   describe('.deleteSongFromPlaylist', function () {
     var song = void 0;
 
-    beforeEach((0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee10() {
-      return _regenerator2.default.wrap(function _callee10$(_context10) {
+    beforeEach((0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee11() {
+      return _regenerator2.default.wrap(function _callee11$(_context11) {
         while (1) {
-          switch (_context10.prev = _context10.next) {
+          switch (_context11.prev = _context11.next) {
             case 0:
               song = new _Song2.default({
                 youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4',
                 inPlaylists: [playlist1._id, playlist2._id]
               });
-              _context10.next = 3;
+              _context11.next = 3;
               return song.save();
 
             case 3:
-            case 'end':
-              return _context10.stop();
-          }
-        }
-      }, _callee10, undefined);
-    })));
-
-    it('can only be accessed by passing a valid JWT', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee11() {
-      var res;
-      return _regenerator2.default.wrap(function _callee11$(_context11) {
-        while (1) {
-          switch (_context11.prev = _context11.next) {
-            case 0:
-              _context11.next = 2;
-              return (0, _supertest2.default)(_app2.default).delete('/api/song/' + playlist1._id + '/' + song._id);
-
-            case 2:
-              res = _context11.sent;
-
-
-              (0, _chai.expect)(res.status).to.equal(401);
-              (0, _chai.expect)(res.text).to.equal('Unauthorized');
-
-            case 5:
             case 'end':
               return _context11.stop();
           }
@@ -409,17 +435,41 @@ describe('songController', function () {
       }, _callee11, undefined);
     })));
 
-    it('sends an error if an invalid song ID is provided', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee12() {
+    it('can only be accessed by passing a valid JWT', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee12() {
       var res;
       return _regenerator2.default.wrap(function _callee12$(_context12) {
         while (1) {
           switch (_context12.prev = _context12.next) {
             case 0:
               _context12.next = 2;
-              return (0, _supertest2.default)(_app2.default).delete('/api/song/' + playlist1._id + '/12345').set('authorization', user1Token);
+              return (0, _supertest2.default)(_app2.default).delete('/api/song/' + playlist1._id + '/' + song._id);
 
             case 2:
               res = _context12.sent;
+
+
+              (0, _chai.expect)(res.status).to.equal(401);
+              (0, _chai.expect)(res.text).to.equal('Unauthorized');
+
+            case 5:
+            case 'end':
+              return _context12.stop();
+          }
+        }
+      }, _callee12, undefined);
+    })));
+
+    it('sends an error if an invalid song ID is provided', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee13() {
+      var res;
+      return _regenerator2.default.wrap(function _callee13$(_context13) {
+        while (1) {
+          switch (_context13.prev = _context13.next) {
+            case 0:
+              _context13.next = 2;
+              return (0, _supertest2.default)(_app2.default).delete('/api/song/' + playlist1._id + '/12345').set('authorization', user1Token);
+
+            case 2:
+              res = _context13.sent;
 
 
               (0, _chai.expect)(res.status).to.equal(422);
@@ -428,24 +478,24 @@ describe('songController', function () {
 
             case 6:
             case 'end':
-              return _context12.stop();
+              return _context13.stop();
           }
         }
-      }, _callee12, undefined);
+      }, _callee13, undefined);
     })));
 
-    it('sends an error if the song does not exist', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee13() {
+    it('sends an error if the song does not exist', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee14() {
       var song2, res;
-      return _regenerator2.default.wrap(function _callee13$(_context13) {
+      return _regenerator2.default.wrap(function _callee14$(_context14) {
         while (1) {
-          switch (_context13.prev = _context13.next) {
+          switch (_context14.prev = _context14.next) {
             case 0:
               song2 = new _Song2.default({ youTubeUrl: 'https://www.youtube.com/watch?v=RUJMqVkSMh4' });
-              _context13.next = 3;
+              _context14.next = 3;
               return (0, _supertest2.default)(_app2.default).delete('/api/song/' + playlist1._id + '/' + song2._id).set('authorization', user1Token);
 
             case 3:
-              res = _context13.sent;
+              res = _context14.sent;
 
 
               (0, _chai.expect)(res.status).to.equal(422);
@@ -454,23 +504,23 @@ describe('songController', function () {
 
             case 7:
             case 'end':
-              return _context13.stop();
+              return _context14.stop();
           }
         }
-      }, _callee13, undefined);
+      }, _callee14, undefined);
     })));
 
-    it('sends an error if an invalid playlist ID is provided', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee14() {
+    it('sends an error if an invalid playlist ID is provided', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee15() {
       var res;
-      return _regenerator2.default.wrap(function _callee14$(_context14) {
+      return _regenerator2.default.wrap(function _callee15$(_context15) {
         while (1) {
-          switch (_context14.prev = _context14.next) {
+          switch (_context15.prev = _context15.next) {
             case 0:
-              _context14.next = 2;
+              _context15.next = 2;
               return (0, _supertest2.default)(_app2.default).delete('/api/song/12345/' + song._id).set('authorization', user1Token);
 
             case 2:
-              res = _context14.sent;
+              res = _context15.sent;
 
 
               (0, _chai.expect)(res.status).to.equal(422);
@@ -479,24 +529,24 @@ describe('songController', function () {
 
             case 6:
             case 'end':
-              return _context14.stop();
+              return _context15.stop();
           }
         }
-      }, _callee14, undefined);
+      }, _callee15, undefined);
     })));
 
-    it('sends an error if the playlist does not exist.', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee15() {
+    it('sends an error if the playlist does not exist.', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee16() {
       var playlist3, res;
-      return _regenerator2.default.wrap(function _callee15$(_context15) {
+      return _regenerator2.default.wrap(function _callee16$(_context16) {
         while (1) {
-          switch (_context15.prev = _context15.next) {
+          switch (_context16.prev = _context16.next) {
             case 0:
               playlist3 = new _Playlist2.default({ title: 'Test Playlist3' });
-              _context15.next = 3;
+              _context16.next = 3;
               return (0, _supertest2.default)(_app2.default).delete('/api/song/' + playlist3._id + '/' + song._id).set('authorization', user1Token);
 
             case 3:
-              res = _context15.sent;
+              res = _context16.sent;
 
 
               (0, _chai.expect)(res.status).to.equal(422);
@@ -505,28 +555,28 @@ describe('songController', function () {
 
             case 7:
             case 'end':
-              return _context15.stop();
+              return _context16.stop();
           }
         }
-      }, _callee15, undefined);
+      }, _callee16, undefined);
     })));
 
-    it("removes a playlist from a song's 'inPlaylists' array", (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee16() {
+    it("removes a playlist from a song's 'inPlaylists' array", (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee17() {
       var res, foundSong;
-      return _regenerator2.default.wrap(function _callee16$(_context16) {
+      return _regenerator2.default.wrap(function _callee17$(_context17) {
         while (1) {
-          switch (_context16.prev = _context16.next) {
+          switch (_context17.prev = _context17.next) {
             case 0:
-              _context16.next = 2;
+              _context17.next = 2;
               return (0, _supertest2.default)(_app2.default).delete('/api/song/' + playlist1._id + '/' + song._id).set('authorization', user1Token);
 
             case 2:
-              res = _context16.sent;
-              _context16.next = 5;
+              res = _context17.sent;
+              _context17.next = 5;
               return _Song2.default.findById(song._id);
 
             case 5:
-              foundSong = _context16.sent;
+              foundSong = _context17.sent;
 
 
               (0, _chai.expect)(res.status).to.equal(200);
@@ -536,33 +586,33 @@ describe('songController', function () {
 
             case 10:
             case 'end':
-              return _context16.stop();
+              return _context17.stop();
           }
         }
-      }, _callee16, undefined);
+      }, _callee17, undefined);
     })));
 
-    it('removes a song altogether if it no longer has any associated playlists', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee17() {
+    it('removes a song altogether if it no longer has any associated playlists', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee18() {
       var song2, res, foundSong;
-      return _regenerator2.default.wrap(function _callee17$(_context17) {
+      return _regenerator2.default.wrap(function _callee18$(_context18) {
         while (1) {
-          switch (_context17.prev = _context17.next) {
+          switch (_context18.prev = _context18.next) {
             case 0:
               song2 = new _Song2.default({ youTubeUrl: 'https://www.youtube.com/watch?v=RUJMqVkSMh4', inPlaylists: [playlist1._id] });
-              _context17.next = 3;
+              _context18.next = 3;
               return song2.save();
 
             case 3:
-              _context17.next = 5;
+              _context18.next = 5;
               return (0, _supertest2.default)(_app2.default).delete('/api/song/' + playlist1._id + '/' + song2._id).set('authorization', user1Token);
 
             case 5:
-              res = _context17.sent;
-              _context17.next = 8;
+              res = _context18.sent;
+              _context18.next = 8;
               return _Song2.default.findById(song2._id);
 
             case 8:
-              foundSong = _context17.sent;
+              foundSong = _context18.sent;
 
 
               (0, _chai.expect)(res.status).to.equal(200);
@@ -571,10 +621,10 @@ describe('songController', function () {
 
             case 12:
             case 'end':
-              return _context17.stop();
+              return _context18.stop();
           }
         }
-      }, _callee17, undefined);
+      }, _callee18, undefined);
     })));
   });
 
@@ -585,10 +635,10 @@ describe('songController', function () {
     var song1 = void 0,
         song2 = void 0;
 
-    beforeEach((0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee18() {
-      return _regenerator2.default.wrap(function _callee18$(_context18) {
+    beforeEach((0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee19() {
+      return _regenerator2.default.wrap(function _callee19$(_context19) {
         while (1) {
-          switch (_context18.prev = _context18.next) {
+          switch (_context19.prev = _context19.next) {
             case 0:
               song1 = new _Song2.default({
                 youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4',
@@ -600,38 +650,14 @@ describe('songController', function () {
                 inPlaylists: [playlist1._id]
               });
 
-              _context18.next = 4;
+              _context19.next = 4;
               return song1.save();
 
             case 4:
-              _context18.next = 6;
+              _context19.next = 6;
               return song2.save();
 
             case 6:
-            case 'end':
-              return _context18.stop();
-          }
-        }
-      }, _callee18, undefined);
-    })));
-
-    it('can only be accessed by passing a valid JWT', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee19() {
-      var res;
-      return _regenerator2.default.wrap(function _callee19$(_context19) {
-        while (1) {
-          switch (_context19.prev = _context19.next) {
-            case 0:
-              _context19.next = 2;
-              return (0, _supertest2.default)(_app2.default).get('/api/song/playlist/' + playlist1._id);
-
-            case 2:
-              res = _context19.sent;
-
-
-              (0, _chai.expect)(res.status).to.equal(401);
-              (0, _chai.expect)(res.text).to.equal('Unauthorized');
-
-            case 5:
             case 'end':
               return _context19.stop();
           }
@@ -639,17 +665,41 @@ describe('songController', function () {
       }, _callee19, undefined);
     })));
 
-    it('sends an error if an invalid playlist ID is provided', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee20() {
+    it('can only be accessed by passing a valid JWT', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee20() {
       var res;
       return _regenerator2.default.wrap(function _callee20$(_context20) {
         while (1) {
           switch (_context20.prev = _context20.next) {
             case 0:
               _context20.next = 2;
-              return (0, _supertest2.default)(_app2.default).get('/api/song/playlist/12345').set('authorization', user1Token);
+              return (0, _supertest2.default)(_app2.default).get('/api/song/playlist/' + playlist1._id);
 
             case 2:
               res = _context20.sent;
+
+
+              (0, _chai.expect)(res.status).to.equal(401);
+              (0, _chai.expect)(res.text).to.equal('Unauthorized');
+
+            case 5:
+            case 'end':
+              return _context20.stop();
+          }
+        }
+      }, _callee20, undefined);
+    })));
+
+    it('sends an error if an invalid playlist ID is provided', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee21() {
+      var res;
+      return _regenerator2.default.wrap(function _callee21$(_context21) {
+        while (1) {
+          switch (_context21.prev = _context21.next) {
+            case 0:
+              _context21.next = 2;
+              return (0, _supertest2.default)(_app2.default).get('/api/song/playlist/12345').set('authorization', user1Token);
+
+            case 2:
+              res = _context21.sent;
 
 
               (0, _chai.expect)(res.status).to.equal(422);
@@ -658,24 +708,24 @@ describe('songController', function () {
 
             case 6:
             case 'end':
-              return _context20.stop();
+              return _context21.stop();
           }
         }
-      }, _callee20, undefined);
+      }, _callee21, undefined);
     })));
 
-    it('sends an error if the playlist does not exist', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee21() {
+    it('sends an error if the playlist does not exist', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee22() {
       var playlist3, res;
-      return _regenerator2.default.wrap(function _callee21$(_context21) {
+      return _regenerator2.default.wrap(function _callee22$(_context22) {
         while (1) {
-          switch (_context21.prev = _context21.next) {
+          switch (_context22.prev = _context22.next) {
             case 0:
               playlist3 = new _Playlist2.default({ title: 'Test Playlist3' });
-              _context21.next = 3;
+              _context22.next = 3;
               return (0, _supertest2.default)(_app2.default).get('/api/song/playlist/' + playlist3._id).set('authorization', user1Token);
 
             case 3:
-              res = _context21.sent;
+              res = _context22.sent;
 
 
               (0, _chai.expect)(res.status).to.equal(422);
@@ -684,17 +734,17 @@ describe('songController', function () {
 
             case 7:
             case 'end':
-              return _context21.stop();
+              return _context22.stop();
           }
         }
-      }, _callee21, undefined);
+      }, _callee22, undefined);
     })));
 
-    it('sends an error if the user is not is not the "forUser" or "byUser" in the playlist', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee22() {
+    it('sends an error if the user is not is not the "forUser" or "byUser" in the playlist', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee23() {
       var user3, user3Token, res;
-      return _regenerator2.default.wrap(function _callee22$(_context22) {
+      return _regenerator2.default.wrap(function _callee23$(_context23) {
         while (1) {
-          switch (_context22.prev = _context22.next) {
+          switch (_context23.prev = _context23.next) {
             case 0:
               user3 = new _User2.default({
                 firstName: 'Test',
@@ -702,15 +752,15 @@ describe('songController', function () {
                 displayName: 'Test User3'
               });
               user3Token = (0, _token2.default)(user3);
-              _context22.next = 4;
+              _context23.next = 4;
               return user3.save();
 
             case 4:
-              _context22.next = 6;
+              _context23.next = 6;
               return (0, _supertest2.default)(_app2.default).get('/api/song/playlist/' + playlist1._id).set('authorization', user3Token);
 
             case 6:
-              res = _context22.sent;
+              res = _context23.sent;
 
 
               (0, _chai.expect)(res.status).to.equal(401);
@@ -719,28 +769,28 @@ describe('songController', function () {
 
             case 10:
             case 'end':
-              return _context22.stop();
+              return _context23.stop();
           }
         }
-      }, _callee22, undefined);
+      }, _callee23, undefined);
     })));
 
-    it('fetches a list of songs that match the provided playlist', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee23() {
+    it('fetches a list of songs that match the provided playlist', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee24() {
       var res1, res2;
-      return _regenerator2.default.wrap(function _callee23$(_context23) {
+      return _regenerator2.default.wrap(function _callee24$(_context24) {
         while (1) {
-          switch (_context23.prev = _context23.next) {
+          switch (_context24.prev = _context24.next) {
             case 0:
-              _context23.next = 2;
+              _context24.next = 2;
               return (0, _supertest2.default)(_app2.default).get('/api/song/playlist/' + playlist1._id).set('authorization', user1Token);
 
             case 2:
-              res1 = _context23.sent;
-              _context23.next = 5;
+              res1 = _context24.sent;
+              _context24.next = 5;
               return (0, _supertest2.default)(_app2.default).get('/api/song/playlist/' + playlist2._id).set('authorization', user1Token);
 
             case 5:
-              res2 = _context23.sent;
+              res2 = _context24.sent;
 
 
               (0, _chai.expect)(res1.status).to.equal(200);
@@ -752,10 +802,10 @@ describe('songController', function () {
 
             case 12:
             case 'end':
-              return _context23.stop();
+              return _context24.stop();
           }
         }
-      }, _callee23, undefined);
+      }, _callee24, undefined);
     })));
   });
 
@@ -768,10 +818,10 @@ describe('songController', function () {
         song3 = void 0,
         song4 = void 0;
 
-    beforeEach((0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee24() {
-      return _regenerator2.default.wrap(function _callee24$(_context24) {
+    beforeEach((0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee25() {
+      return _regenerator2.default.wrap(function _callee25$(_context25) {
         while (1) {
-          switch (_context24.prev = _context24.next) {
+          switch (_context25.prev = _context25.next) {
             case 0:
               song1 = new _Song2.default({
                 youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4',
@@ -797,46 +847,22 @@ describe('songController', function () {
                 likedByUsers: [user1._id]
               });
 
-              _context24.next = 6;
+              _context25.next = 6;
               return song1.save();
 
             case 6:
-              _context24.next = 8;
+              _context25.next = 8;
               return song2.save();
 
             case 8:
-              _context24.next = 10;
+              _context25.next = 10;
               return song3.save();
 
             case 10:
-              _context24.next = 12;
+              _context25.next = 12;
               return song4.save();
 
             case 12:
-            case 'end':
-              return _context24.stop();
-          }
-        }
-      }, _callee24, undefined);
-    })));
-
-    it('can only  be accessed by passing a valid JWT', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee25() {
-      var res;
-      return _regenerator2.default.wrap(function _callee25$(_context25) {
-        while (1) {
-          switch (_context25.prev = _context25.next) {
-            case 0:
-              _context25.next = 2;
-              return (0, _supertest2.default)(_app2.default).get('/api/song/liked');
-
-            case 2:
-              res = _context25.sent;
-
-
-              (0, _chai.expect)(res.status).to.equal(401);
-              (0, _chai.expect)(res.text).to.equal('Unauthorized');
-
-            case 5:
             case 'end':
               return _context25.stop();
           }
@@ -844,22 +870,46 @@ describe('songController', function () {
       }, _callee25, undefined);
     })));
 
-    it('sends a list of songs liked by the user', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee26() {
-      var res1, res2;
+    it('can only  be accessed by passing a valid JWT', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee26() {
+      var res;
       return _regenerator2.default.wrap(function _callee26$(_context26) {
         while (1) {
           switch (_context26.prev = _context26.next) {
             case 0:
               _context26.next = 2;
+              return (0, _supertest2.default)(_app2.default).get('/api/song/liked');
+
+            case 2:
+              res = _context26.sent;
+
+
+              (0, _chai.expect)(res.status).to.equal(401);
+              (0, _chai.expect)(res.text).to.equal('Unauthorized');
+
+            case 5:
+            case 'end':
+              return _context26.stop();
+          }
+        }
+      }, _callee26, undefined);
+    })));
+
+    it('sends a list of songs liked by the user', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee27() {
+      var res1, res2;
+      return _regenerator2.default.wrap(function _callee27$(_context27) {
+        while (1) {
+          switch (_context27.prev = _context27.next) {
+            case 0:
+              _context27.next = 2;
               return (0, _supertest2.default)(_app2.default).get('/api/song/liked').set('authorization', user1Token);
 
             case 2:
-              res1 = _context26.sent;
-              _context26.next = 5;
+              res1 = _context27.sent;
+              _context27.next = 5;
               return (0, _supertest2.default)(_app2.default).get('/api/song/liked').set('authorization', user2Token);
 
             case 5:
-              res2 = _context26.sent;
+              res2 = _context27.sent;
 
 
               (0, _chai.expect)(res1.status).to.equal(200);
@@ -871,10 +921,10 @@ describe('songController', function () {
 
             case 12:
             case 'end':
-              return _context26.stop();
+              return _context27.stop();
           }
         }
-      }, _callee26, undefined);
+      }, _callee27, undefined);
     })));
   });
 
@@ -884,44 +934,20 @@ describe('songController', function () {
   describe('.likeSong', function () {
     var song = void 0;
 
-    beforeEach((0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee27() {
-      return _regenerator2.default.wrap(function _callee27$(_context27) {
+    beforeEach((0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee28() {
+      return _regenerator2.default.wrap(function _callee28$(_context28) {
         while (1) {
-          switch (_context27.prev = _context27.next) {
+          switch (_context28.prev = _context28.next) {
             case 0:
               song = new _Song2.default({
                 youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4',
                 inPlaylists: [playlist1._id]
               });
 
-              _context27.next = 3;
+              _context28.next = 3;
               return song.save();
 
             case 3:
-            case 'end':
-              return _context27.stop();
-          }
-        }
-      }, _callee27, undefined);
-    })));
-
-    it('can only  be accessed by passing a valid JWT', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee28() {
-      var res;
-      return _regenerator2.default.wrap(function _callee28$(_context28) {
-        while (1) {
-          switch (_context28.prev = _context28.next) {
-            case 0:
-              _context28.next = 2;
-              return (0, _supertest2.default)(_app2.default).put('/api/song/like/' + song._id);
-
-            case 2:
-              res = _context28.sent;
-
-
-              (0, _chai.expect)(res.status).to.equal(401);
-              (0, _chai.expect)(res.text).to.equal('Unauthorized');
-
-            case 5:
             case 'end':
               return _context28.stop();
           }
@@ -929,17 +955,41 @@ describe('songController', function () {
       }, _callee28, undefined);
     })));
 
-    it('sends an error if an invalid song ID is provided', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee29() {
+    it('can only  be accessed by passing a valid JWT', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee29() {
       var res;
       return _regenerator2.default.wrap(function _callee29$(_context29) {
         while (1) {
           switch (_context29.prev = _context29.next) {
             case 0:
               _context29.next = 2;
-              return (0, _supertest2.default)(_app2.default).put('/api/song/like/12345').set('authorization', user1Token);
+              return (0, _supertest2.default)(_app2.default).put('/api/song/like/' + song._id);
 
             case 2:
               res = _context29.sent;
+
+
+              (0, _chai.expect)(res.status).to.equal(401);
+              (0, _chai.expect)(res.text).to.equal('Unauthorized');
+
+            case 5:
+            case 'end':
+              return _context29.stop();
+          }
+        }
+      }, _callee29, undefined);
+    })));
+
+    it('sends an error if an invalid song ID is provided', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee30() {
+      var res;
+      return _regenerator2.default.wrap(function _callee30$(_context30) {
+        while (1) {
+          switch (_context30.prev = _context30.next) {
+            case 0:
+              _context30.next = 2;
+              return (0, _supertest2.default)(_app2.default).put('/api/song/like/12345').set('authorization', user1Token);
+
+            case 2:
+              res = _context30.sent;
 
 
               (0, _chai.expect)(res.status).to.equal(422);
@@ -948,27 +998,27 @@ describe('songController', function () {
 
             case 6:
             case 'end':
-              return _context29.stop();
+              return _context30.stop();
           }
         }
-      }, _callee29, undefined);
+      }, _callee30, undefined);
     })));
 
-    it('sends an error if the song does not exist', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee30() {
+    it('sends an error if the song does not exist', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee31() {
       var song2, res;
-      return _regenerator2.default.wrap(function _callee30$(_context30) {
+      return _regenerator2.default.wrap(function _callee31$(_context31) {
         while (1) {
-          switch (_context30.prev = _context30.next) {
+          switch (_context31.prev = _context31.next) {
             case 0:
               song2 = new _Song2.default({
                 youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4',
                 inPlaylists: [playlist1._id]
               });
-              _context30.next = 3;
+              _context31.next = 3;
               return (0, _supertest2.default)(_app2.default).put('/api/song/like/' + song2._id).set('authorization', user1Token);
 
             case 3:
-              res = _context30.sent;
+              res = _context31.sent;
 
 
               (0, _chai.expect)(res.status).to.equal(422);
@@ -977,28 +1027,28 @@ describe('songController', function () {
 
             case 7:
             case 'end':
-              return _context30.stop();
+              return _context31.stop();
           }
         }
-      }, _callee30, undefined);
+      }, _callee31, undefined);
     })));
 
-    it("adds a user to a song's 'likedByUsers' array", (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee31() {
+    it("adds a user to a song's 'likedByUsers' array", (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee32() {
       var res, foundSong;
-      return _regenerator2.default.wrap(function _callee31$(_context31) {
+      return _regenerator2.default.wrap(function _callee32$(_context32) {
         while (1) {
-          switch (_context31.prev = _context31.next) {
+          switch (_context32.prev = _context32.next) {
             case 0:
-              _context31.next = 2;
+              _context32.next = 2;
               return (0, _supertest2.default)(_app2.default).put('/api/song/like/' + song._id).set('authorization', user1Token);
 
             case 2:
-              res = _context31.sent;
-              _context31.next = 5;
+              res = _context32.sent;
+              _context32.next = 5;
               return _Song2.default.findById(song._id);
 
             case 5:
-              foundSong = _context31.sent;
+              foundSong = _context32.sent;
 
 
               (0, _chai.expect)(res.status).to.equal(200);
@@ -1008,10 +1058,10 @@ describe('songController', function () {
 
             case 10:
             case 'end':
-              return _context31.stop();
+              return _context32.stop();
           }
         }
-      }, _callee31, undefined);
+      }, _callee32, undefined);
     })));
   });
 
@@ -1021,10 +1071,10 @@ describe('songController', function () {
   describe('.unlikeSong', function () {
     var song = void 0;
 
-    beforeEach((0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee32() {
-      return _regenerator2.default.wrap(function _callee32$(_context32) {
+    beforeEach((0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee33() {
+      return _regenerator2.default.wrap(function _callee33$(_context33) {
         while (1) {
-          switch (_context32.prev = _context32.next) {
+          switch (_context33.prev = _context33.next) {
             case 0:
               song = new _Song2.default({
                 youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4',
@@ -1032,34 +1082,10 @@ describe('songController', function () {
                 likedByUsers: [user1._id, user2._id]
               });
 
-              _context32.next = 3;
+              _context33.next = 3;
               return song.save();
 
             case 3:
-            case 'end':
-              return _context32.stop();
-          }
-        }
-      }, _callee32, undefined);
-    })));
-
-    it('can only  be accessed by passing a valid JWT', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee33() {
-      var res;
-      return _regenerator2.default.wrap(function _callee33$(_context33) {
-        while (1) {
-          switch (_context33.prev = _context33.next) {
-            case 0:
-              _context33.next = 2;
-              return (0, _supertest2.default)(_app2.default).put('/api/song/unlike/' + song._id);
-
-            case 2:
-              res = _context33.sent;
-
-
-              (0, _chai.expect)(res.status).to.equal(401);
-              (0, _chai.expect)(res.text).to.equal('Unauthorized');
-
-            case 5:
             case 'end':
               return _context33.stop();
           }
@@ -1067,17 +1093,41 @@ describe('songController', function () {
       }, _callee33, undefined);
     })));
 
-    it('sends an error if an invalid song ID is provided', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee34() {
+    it('can only  be accessed by passing a valid JWT', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee34() {
       var res;
       return _regenerator2.default.wrap(function _callee34$(_context34) {
         while (1) {
           switch (_context34.prev = _context34.next) {
             case 0:
               _context34.next = 2;
-              return (0, _supertest2.default)(_app2.default).put('/api/song/unlike/12345').set('authorization', user1Token);
+              return (0, _supertest2.default)(_app2.default).put('/api/song/unlike/' + song._id);
 
             case 2:
               res = _context34.sent;
+
+
+              (0, _chai.expect)(res.status).to.equal(401);
+              (0, _chai.expect)(res.text).to.equal('Unauthorized');
+
+            case 5:
+            case 'end':
+              return _context34.stop();
+          }
+        }
+      }, _callee34, undefined);
+    })));
+
+    it('sends an error if an invalid song ID is provided', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee35() {
+      var res;
+      return _regenerator2.default.wrap(function _callee35$(_context35) {
+        while (1) {
+          switch (_context35.prev = _context35.next) {
+            case 0:
+              _context35.next = 2;
+              return (0, _supertest2.default)(_app2.default).put('/api/song/unlike/12345').set('authorization', user1Token);
+
+            case 2:
+              res = _context35.sent;
 
 
               (0, _chai.expect)(res.status).to.equal(422);
@@ -1086,27 +1136,27 @@ describe('songController', function () {
 
             case 6:
             case 'end':
-              return _context34.stop();
+              return _context35.stop();
           }
         }
-      }, _callee34, undefined);
+      }, _callee35, undefined);
     })));
 
-    it('sends an error if the song does not exist', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee35() {
+    it('sends an error if the song does not exist', (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee36() {
       var song2, res;
-      return _regenerator2.default.wrap(function _callee35$(_context35) {
+      return _regenerator2.default.wrap(function _callee36$(_context36) {
         while (1) {
-          switch (_context35.prev = _context35.next) {
+          switch (_context36.prev = _context36.next) {
             case 0:
               song2 = new _Song2.default({
                 youTubeUrl: 'https://www.youtube.com/watch?v=YoB8t0B4jx4',
                 inPlaylists: [playlist1._id, playlist2._id]
               });
-              _context35.next = 3;
+              _context36.next = 3;
               return (0, _supertest2.default)(_app2.default).put('/api/song/unlike/' + song2._id).set('authorization', user1Token);
 
             case 3:
-              res = _context35.sent;
+              res = _context36.sent;
 
 
               (0, _chai.expect)(res.status).to.equal(422);
@@ -1115,28 +1165,28 @@ describe('songController', function () {
 
             case 7:
             case 'end':
-              return _context35.stop();
+              return _context36.stop();
           }
         }
-      }, _callee35, undefined);
+      }, _callee36, undefined);
     })));
 
-    it("removes a user from a song's 'likedByUsers' array", (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee36() {
+    it("removes a user from a song's 'likedByUsers' array", (0, _asyncToGenerator3.default)(_regenerator2.default.mark(function _callee37() {
       var res, foundSong;
-      return _regenerator2.default.wrap(function _callee36$(_context36) {
+      return _regenerator2.default.wrap(function _callee37$(_context37) {
         while (1) {
-          switch (_context36.prev = _context36.next) {
+          switch (_context37.prev = _context37.next) {
             case 0:
-              _context36.next = 2;
+              _context37.next = 2;
               return (0, _supertest2.default)(_app2.default).put('/api/song/unlike/' + song._id).set('authorization', user1Token);
 
             case 2:
-              res = _context36.sent;
-              _context36.next = 5;
+              res = _context37.sent;
+              _context37.next = 5;
               return _Song2.default.findById(song._id);
 
             case 5:
-              foundSong = _context36.sent;
+              foundSong = _context37.sent;
 
 
               (0, _chai.expect)(res.status).to.equal(200);
@@ -1147,10 +1197,10 @@ describe('songController', function () {
 
             case 11:
             case 'end':
-              return _context36.stop();
+              return _context37.stop();
           }
         }
-      }, _callee36, undefined);
+      }, _callee37, undefined);
     })));
   });
 });

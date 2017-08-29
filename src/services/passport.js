@@ -7,14 +7,14 @@ import User from '../models/User';
 const facebookOptions = {
   clientID: process.env.FACEBOOK_APP_ID,
   clientSecret: process.env.FACEBOOK_APP_SECRET,
-  callbackURL: 'https://playlism.herokuapp.com/api/auth/facebook/callback',
+  callbackURL: 'http://127.0.0.1:3000/api/auth/facebook/callback',
   profileFields: ['id', 'name', 'picture.type(large)'],
 };
 
 const googleOptions = {
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: 'https://playlism.herokuapp.com/api/auth/google/callback',
+  callbackURL: 'http://127.0.0.1:3000/api/auth/google/callback',
 };
 
 const jwtOptions = {
@@ -25,42 +25,53 @@ const jwtOptions = {
 const facebookLogin = new FacebookStrategy(facebookOptions, async (accessToken, refreshToken, profile, done) => {
   try {
     const { id, first_name, last_name, picture } = profile._json;
-    const user = await User.findOrCreate({ 'facebookId': id }, {
-      displayName: `${first_name} ${last_name}`,
-      facebookId: id,
-      firstName: first_name,
-      lastName: last_name,
-      profileImg: encodeURIComponent(profile.photos[0].value),
-      displayNameLower: `${first_name} ${last_name}`.toLowerCase(),
-    });
+    let user = await User.findOneAndUpdate({ 'facebookId': id }, { lastLogin: Date.now() });
 
-    done(null, user.result);
+    if (!user) {
+      user = new User({
+        displayName: `${first_name} ${last_name}`,
+        facebookId: id,
+        firstName: first_name,
+        lastName: last_name,
+        profileImg: encodeURIComponent(profile.photos[0].value),
+        displayNameLower: `${first_name} ${last_name}`.toLowerCase(),
+      });
+
+      await user.save();
+    }
+
+    done(null, user);
   } catch (err) {
-    done(err);
+    done(err, false);
   }
 });
 
 const googleLogin = new GoogleStrategy(googleOptions, async (accessToken, refreshToken, profile, done) => {
   try {
     const { id, name, displayName, image } = profile._json;
-    const user = await User.findOrCreate({ 'googleId': id }, {
-      displayName,
-      googleId: id,
-      firstName: name.givenName,
-      lastName: name.familyName,
-      profileImg: encodeURIComponent(image.url),
-      displayNameLower: displayName.toLowerCase(),
-    });
+    let user = await User.findOneAndUpdate({ 'googleId': id }, { lastLogin: Date.now() });
 
-    done(null, user.result);
+    if (!user) {
+      user = new User({
+        displayName,
+        googleId: id,
+        firstName: name.givenName,
+        lastName: name.familyName,
+        profileImg: encodeURIComponent(image.url),
+        displayNameLower: displayName.toLowerCase(),
+      });
+
+      await user.save();
+    }
+    done(null, user);
   } catch (err) {
-    done(err);
+    done(err, false);
   }
 });
 
 const jwtLogin = new JwtStrategy(jwtOptions, async (jwt_payload, done) => {
   try {
-    const user = await User.findById(jwt_payload.sub)
+    const user = await User.findByIdAndUpdate(jwt_payload.sub, { lastLogin: Date.now() })
 
     if (user) {
       done(null, user);
