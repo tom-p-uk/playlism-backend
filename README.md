@@ -30,6 +30,7 @@ FACEBOOK_APP_ID=""
 FACEBOOK_APP_SECRET=""
 GOOGLE_CLIENT_ID=""
 GOOGLE_CLIENT_SECRET=""
+HOST=""
 ```
 
 To run the API, enter the following command:

@@ -7,14 +7,14 @@ import User from '../models/User';
 const facebookOptions = {
   clientID: process.env.FACEBOOK_APP_ID,
   clientSecret: process.env.FACEBOOK_APP_SECRET,
-  callbackURL: 'http://127.0.0.1:3000/api/auth/facebook/callback',
+  callbackURL: `${process.env.HOST}/api/auth/facebook/callback`,
   profileFields: ['id', 'name', 'picture.type(large)'],
 };
 
 const googleOptions = {
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: 'http://127.0.0.1:3000/api/auth/google/callback',
+  callbackURL: `${process.env.HOST}/api/auth/google/callback`,
 };
 
 const jwtOptions = {
