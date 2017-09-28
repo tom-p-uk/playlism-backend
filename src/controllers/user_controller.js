@@ -112,7 +112,7 @@ export const addFriend = async (req, res) => {
     res.status(200).send({ success: { friendRequestsSent } });
 
     if (receivingUser.pushToken) {
-      sendPushNotifications(receivingUser.pushToken, `${sendingUser.displayName} sent you a friend request on Playlism.`)
+      sendPushNotifications(receivingUser.pushToken, `${sendingUser.displayName} sent you a friend request on Playlism.`);
     }
   } catch (err) {
     console.log(err);
@@ -166,7 +166,15 @@ export const acceptRejectFriendRequest = async (req, res) => {
     await sendingUser.save();
 
     receivingUserFriend.user = sendingUser;
-    accept ? res.status(200).send({ success: { friend: receivingUserFriend } }) : res.status(200).send({ success: 'Request rejected.' });
+    if (accept) {
+      res.status(200).send({ success: { friend: receivingUserFriend } });
+
+      if (sendingUser.pushToken) {
+      sendPushNotifications(sendingUser.pushToken, `${receivingUser.displayName} accepted your friend request on Playlism.`);
+    }
+    } else {
+      res.status(200).send({ success: 'Request rejected.' });
+    }
   } catch (err) {
     console.log(err);
     res.status(500).send({ error: 'Could not respond to friend request.' });

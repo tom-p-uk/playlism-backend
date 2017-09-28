@@ -393,7 +393,15 @@ var acceptRejectFriendRequest = exports.acceptRejectFriendRequest = function () 
           case 24:
 
             receivingUserFriend.user = sendingUser;
-            accept ? res.status(200).send({ success: { friend: receivingUserFriend } }) : res.status(200).send({ success: 'Request rejected.' });
+            if (accept) {
+              res.status(200).send({ success: { friend: receivingUserFriend } });
+
+              if (sendingUser.pushToken) {
+                (0, _send_push_notifications2.default)(sendingUser.pushToken, receivingUser.displayName + ' accepted your friend request on Playlism.');
+              }
+            } else {
+              res.status(200).send({ success: 'Request rejected.' });
+            }
             _context6.next = 32;
             break;
 
